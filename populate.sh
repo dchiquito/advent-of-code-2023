@@ -1,7 +1,7 @@
 #!/bin/sh
 
 templatize_day () {
-  local DAY=$1
+  export DAY=$1
   echo "Templatizing day ${DAY}"
   cat template.rs | envsubst > src/day${DAY}.rs
 }

@@ -1,5 +1,7 @@
 use clap::Parser;
 
+mod util;
+
 mod day1;
 mod day2;
 mod day3;
@@ -28,6 +30,8 @@ mod day23;
 mod day24;
 mod day25;
 
+use crate::util::DaySolver;
+
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
 struct Args {
@@ -40,72 +44,64 @@ struct Args {
     day: Option<usize>,
 }
 
-fn download_input(day: usize) {}
-
-fn get_input(day: usize) -> Vec<String> {
-    todo!()
-}
-
 fn solve_part1(day: usize) -> Option<String> {
-    let input = get_input(day);
     match day {
-        1 => crate::day1::part1(input),
-        2 => crate::day2::part1(input),
-        3 => crate::day3::part1(input),
-        4 => crate::day4::part1(input),
-        5 => crate::day5::part1(input),
-        6 => crate::day6::part1(input),
-        7 => crate::day7::part1(input),
-        8 => crate::day8::part1(input),
-        9 => crate::day9::part1(input),
-        10 => crate::day10::part1(input),
-        11 => crate::day11::part1(input),
-        12 => crate::day12::part1(input),
-        13 => crate::day13::part1(input),
-        14 => crate::day14::part1(input),
-        15 => crate::day15::part1(input),
-        16 => crate::day16::part1(input),
-        17 => crate::day17::part1(input),
-        18 => crate::day18::part1(input),
-        19 => crate::day19::part1(input),
-        20 => crate::day20::part1(input),
-        21 => crate::day21::part1(input),
-        22 => crate::day22::part1(input),
-        23 => crate::day23::part1(input),
-        24 => crate::day24::part1(input),
-        25 => crate::day25::part1(input),
+        1 => crate::day1::Day1::solve_part1(day),
+        2 => crate::day2::Day2::solve_part1(day),
+        3 => crate::day3::Day3::solve_part1(day),
+        4 => crate::day4::Day4::solve_part1(day),
+        5 => crate::day5::Day5::solve_part1(day),
+        6 => crate::day6::Day6::solve_part1(day),
+        7 => crate::day7::Day7::solve_part1(day),
+        8 => crate::day8::Day8::solve_part1(day),
+        9 => crate::day9::Day9::solve_part1(day),
+        10 => crate::day10::Day10::solve_part1(day),
+        11 => crate::day11::Day11::solve_part1(day),
+        12 => crate::day12::Day12::solve_part1(day),
+        13 => crate::day13::Day13::solve_part1(day),
+        14 => crate::day14::Day14::solve_part1(day),
+        15 => crate::day15::Day15::solve_part1(day),
+        16 => crate::day16::Day16::solve_part1(day),
+        17 => crate::day17::Day17::solve_part1(day),
+        18 => crate::day18::Day18::solve_part1(day),
+        19 => crate::day19::Day19::solve_part1(day),
+        20 => crate::day20::Day20::solve_part1(day),
+        21 => crate::day21::Day21::solve_part1(day),
+        22 => crate::day22::Day22::solve_part1(day),
+        23 => crate::day23::Day23::solve_part1(day),
+        24 => crate::day24::Day24::solve_part1(day),
+        25 => crate::day25::Day25::solve_part1(day),
         _ => panic!("Invalid day {}", day),
     }
 }
 
 fn solve_part2(day: usize) -> Option<String> {
-    let input = vec![];
     match day {
-        1 => crate::day1::part2(input),
-        2 => crate::day2::part2(input),
-        3 => crate::day3::part2(input),
-        4 => crate::day4::part2(input),
-        5 => crate::day5::part2(input),
-        6 => crate::day6::part2(input),
-        7 => crate::day7::part2(input),
-        8 => crate::day8::part2(input),
-        9 => crate::day9::part2(input),
-        10 => crate::day10::part2(input),
-        11 => crate::day11::part2(input),
-        12 => crate::day12::part2(input),
-        13 => crate::day13::part2(input),
-        14 => crate::day14::part2(input),
-        15 => crate::day15::part2(input),
-        16 => crate::day16::part2(input),
-        17 => crate::day17::part2(input),
-        18 => crate::day18::part2(input),
-        19 => crate::day19::part2(input),
-        20 => crate::day20::part2(input),
-        21 => crate::day21::part2(input),
-        22 => crate::day22::part2(input),
-        23 => crate::day23::part2(input),
-        24 => crate::day24::part2(input),
-        25 => crate::day25::part2(input),
+        1 => crate::day1::Day1::solve_part2(day),
+        2 => crate::day2::Day2::solve_part2(day),
+        3 => crate::day3::Day3::solve_part2(day),
+        4 => crate::day4::Day4::solve_part2(day),
+        5 => crate::day5::Day5::solve_part2(day),
+        6 => crate::day6::Day6::solve_part2(day),
+        7 => crate::day7::Day7::solve_part2(day),
+        8 => crate::day8::Day8::solve_part2(day),
+        9 => crate::day9::Day9::solve_part2(day),
+        10 => crate::day10::Day10::solve_part2(day),
+        11 => crate::day11::Day11::solve_part2(day),
+        12 => crate::day12::Day12::solve_part2(day),
+        13 => crate::day13::Day13::solve_part2(day),
+        14 => crate::day14::Day14::solve_part2(day),
+        15 => crate::day15::Day15::solve_part2(day),
+        16 => crate::day16::Day16::solve_part2(day),
+        17 => crate::day17::Day17::solve_part2(day),
+        18 => crate::day18::Day18::solve_part2(day),
+        19 => crate::day19::Day19::solve_part2(day),
+        20 => crate::day20::Day20::solve_part2(day),
+        21 => crate::day21::Day21::solve_part2(day),
+        22 => crate::day22::Day22::solve_part2(day),
+        23 => crate::day23::Day23::solve_part2(day),
+        24 => crate::day24::Day24::solve_part2(day),
+        25 => crate::day25::Day25::solve_part2(day),
         _ => panic!("Invalid day {}", day),
     }
 }
