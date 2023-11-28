@@ -17,3 +17,9 @@ Cargo.lock
 # Added by cargo
 
 /target
+
+# Ignore anything in the inputs directory, inputs are personal
+/inputs/*
+
+# Ignore the cookie, it's private
+.cookie

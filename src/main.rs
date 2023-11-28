@@ -42,6 +42,14 @@ struct Args {
     /// The day to run
     #[arg()]
     day: Option<usize>,
+
+    /// Clear the cookie
+    #[arg(long)]
+    cookie: bool,
+
+    /// Download input again
+    #[arg(long)]
+    pull: bool,
 }
 
 fn solve_part1(day: usize) -> Option<String> {
@@ -112,7 +120,19 @@ fn main() {
         todo!("Run all days in order")
     }
     if let Some(day) = args.day {
-        solve_part1(day);
-        solve_part2(day);
+        if args.cookie {
+            util::clear_cookie();
+        }
+        if args.pull {
+            util::download_input(day);
+        }
+        if let Some(solution1) = solve_part1(day) {
+            println!("Part 1: {solution1}");
+            if let Some(solution2) = solve_part2(day) {
+                println!("Part 2: {solution2}");
+            }
+        } else {
+            println!("At least one solution must be implemented before it can be run");
+        }
     }
 }
