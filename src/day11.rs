@@ -1,3 +1,4 @@
+#![allow(unused)]
 use crate::util::DaySolver;
 
 type Solution = usize;
