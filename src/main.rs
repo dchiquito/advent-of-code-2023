@@ -116,13 +116,24 @@ fn solve_part2(day: usize) -> Option<String> {
 
 fn main() {
     let args = Args::parse();
+    if args.cookie {
+        util::clear_cookie();
+    }
     if args.all {
-        todo!("Run all days in order")
+        for day in 1..=25 {
+            if args.pull {
+                util::download_input(day);
+            }
+            if let Some(solution1) = solve_part1(day) {
+                println!("Day {day}");
+                println!("  Part 1: {solution1}");
+                if let Some(solution2) = solve_part2(day) {
+                    println!("  Part 2: {solution2}");
+                }
+            }
+        }
     }
     if let Some(day) = args.day {
-        if args.cookie {
-            util::clear_cookie();
-        }
         if args.pull {
             util::download_input(day);
         }

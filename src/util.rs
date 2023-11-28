@@ -66,7 +66,6 @@ pub fn download_input(day: usize) -> Vec<String> {
 fn get_input(day: usize) -> Vec<String> {
     let path = input_file(day);
     if path.exists() {
-        println!("Using cached input {path:?}");
         let file = File::open(path).unwrap();
         std::io::BufReader::new(file)
             .lines()
