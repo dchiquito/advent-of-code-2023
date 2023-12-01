@@ -4,7 +4,7 @@ use std::fs::{remove_file, File};
 use std::io::{stdin, BufRead, Read, Write};
 use std::path::PathBuf;
 
-const YEAR: usize = 2022;
+const YEAR: usize = 2023;
 const COOKIE_FILE: &str = ".cookie";
 
 // This might be useful for getting the current level
