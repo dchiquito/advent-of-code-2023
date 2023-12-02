@@ -9,19 +9,34 @@ pub struct Day1();
 
 impl Day1 {
     fn calibration_number(line: &str) -> u32 {
+        let pairs = [
+            ('0', 0),
+            ('1', 1),
+            ('2', 2),
+            ('3', 3),
+            ('4', 4),
+            ('5', 5),
+            ('6', 6),
+            ('7', 7),
+            ('8', 8),
+            ('9', 9),
+        ];
         let f = line
             .chars()
-            .find(|c| "0123456789".contains(*c))
-            .unwrap()
-            .to_digit(10)
+            .find_map(|c| pairs.iter().find(|(p1, p2)| *p1 == c).map(|(p1, p2)| p2))
             .unwrap();
         let l = line
             .chars()
-            .filter(|c| "0123456789".contains(*c))
-            .last()
-            .unwrap()
-            .to_digit(10)
+            .rev()
+            .find_map(|c| pairs.iter().find(|(p1, p2)| *p1 == c).map(|(p1, p2)| p2))
             .unwrap();
+        // let l = line
+        //     .chars()
+        //     .filter(|c| "0123456789".contains(*c))
+        //     .last()
+        //     .unwrap()
+        //     .to_digit(10)
+        //     .unwrap();
         (f * 10) + l
     }
     fn with_spelling(line: &str) -> Option<u32> {
