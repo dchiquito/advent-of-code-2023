@@ -15,47 +15,53 @@ pub struct Card {
     have: [u32; 25],
 }
 
+macro_rules! parse_digits {
+    ($value:expr, $a:expr) => {
+        $value[$a..$a + 2].trim_start().parse().unwrap()
+    };
+}
+
 impl From<&String> for Card {
     fn from(value: &String) -> Self {
-        let number: u32 = value[5..8].trim().parse().unwrap();
+        let number: u32 = value[5..8].trim_start().parse().unwrap();
         let winners = [
-            value[10..12].trim().parse().unwrap(),
-            value[13..15].trim().parse().unwrap(),
-            value[16..18].trim().parse().unwrap(),
-            value[19..21].trim().parse().unwrap(),
-            value[22..24].trim().parse().unwrap(),
-            value[25..27].trim().parse().unwrap(),
-            value[28..30].trim().parse().unwrap(),
-            value[31..33].trim().parse().unwrap(),
-            value[34..36].trim().parse().unwrap(),
-            value[37..39].trim().parse().unwrap(),
+            parse_digits!(value, 10),
+            parse_digits!(value, 13),
+            parse_digits!(value, 16),
+            parse_digits!(value, 19),
+            parse_digits!(value, 22),
+            parse_digits!(value, 25),
+            parse_digits!(value, 28),
+            parse_digits!(value, 31),
+            parse_digits!(value, 34),
+            parse_digits!(value, 37),
         ];
         let have = [
-            value[42..44].trim().parse().unwrap(),
-            value[45..47].trim().parse().unwrap(),
-            value[48..50].trim().parse().unwrap(),
-            value[51..53].trim().parse().unwrap(),
-            value[54..56].trim().parse().unwrap(),
-            value[57..59].trim().parse().unwrap(),
-            value[60..62].trim().parse().unwrap(),
-            value[63..65].trim().parse().unwrap(),
-            value[66..68].trim().parse().unwrap(),
-            value[69..71].trim().parse().unwrap(),
-            value[72..74].trim().parse().unwrap(),
-            value[75..77].trim().parse().unwrap(),
-            value[78..80].trim().parse().unwrap(),
-            value[81..83].trim().parse().unwrap(),
-            value[84..86].trim().parse().unwrap(),
-            value[87..89].trim().parse().unwrap(),
-            value[90..92].trim().parse().unwrap(),
-            value[93..95].trim().parse().unwrap(),
-            value[96..98].trim().parse().unwrap(),
-            value[99..101].trim().parse().unwrap(),
-            value[102..104].trim().parse().unwrap(),
-            value[105..107].trim().parse().unwrap(),
-            value[108..110].trim().parse().unwrap(),
-            value[111..113].trim().parse().unwrap(),
-            value[114..116].trim().parse().unwrap(),
+            parse_digits!(value, 42),
+            parse_digits!(value, 45),
+            parse_digits!(value, 48),
+            parse_digits!(value, 51),
+            parse_digits!(value, 54),
+            parse_digits!(value, 57),
+            parse_digits!(value, 60),
+            parse_digits!(value, 63),
+            parse_digits!(value, 66),
+            parse_digits!(value, 69),
+            parse_digits!(value, 72),
+            parse_digits!(value, 75),
+            parse_digits!(value, 78),
+            parse_digits!(value, 81),
+            parse_digits!(value, 84),
+            parse_digits!(value, 87),
+            parse_digits!(value, 90),
+            parse_digits!(value, 93),
+            parse_digits!(value, 96),
+            parse_digits!(value, 99),
+            parse_digits!(value, 102),
+            parse_digits!(value, 105),
+            parse_digits!(value, 108),
+            parse_digits!(value, 111),
+            parse_digits!(value, 114),
         ];
         Card {
             number,
