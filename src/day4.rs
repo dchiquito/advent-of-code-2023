@@ -15,9 +15,17 @@ pub struct Card {
 }
 
 macro_rules! parse_digits {
-    ($value:expr, $a:expr) => {
-        $value[$a..$a + 2].trim_start().parse().unwrap()
-    };
+    ($value:expr, $a:expr) => {{
+        let mut cs = $value[$a..$a + 2].chars();
+        let x = cs.next().unwrap();
+        let y = cs.next().unwrap();
+        if x == ' ' {
+            y.to_digit(10).unwrap()
+        } else {
+            x.to_digit(10).unwrap() * 10 + y.to_digit(10).unwrap()
+        }
+        // $value[$a..$a + 2].trim_start().parse().unwrap()
+    }};
 }
 
 impl From<&String> for Card {
