@@ -10,7 +10,6 @@ type Solution = usize;
 pub struct Day4();
 
 pub struct Card {
-    number: u32,
     winners: [u32; 10],
     have: [u32; 25],
 }
@@ -23,7 +22,6 @@ macro_rules! parse_digits {
 
 impl From<&String> for Card {
     fn from(value: &String) -> Self {
-        let number: u32 = value[5..8].trim_start().parse().unwrap();
         let winners = [
             parse_digits!(value, 10),
             parse_digits!(value, 13),
@@ -63,11 +61,7 @@ impl From<&String> for Card {
             parse_digits!(value, 111),
             parse_digits!(value, 114),
         ];
-        Card {
-            number,
-            winners,
-            have,
-        }
+        Card { winners, have }
     }
 }
 
