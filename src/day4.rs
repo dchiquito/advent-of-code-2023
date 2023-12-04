@@ -10,7 +10,7 @@ type Solution = usize;
 pub struct Day4();
 
 #[derive(Debug)]
-struct Card {
+pub struct Card {
     number: u32,
     winners: HashSet<u32>,
     have: Vec<u32>,
@@ -56,7 +56,7 @@ impl Card {
 }
 
 impl Day4 {
-    fn parse(input: Vec<String>) -> Vec<Card> {
+    pub fn parse(input: Vec<String>) -> Vec<Card> {
         input.iter().map(|line| line.into()).collect()
     }
 }
