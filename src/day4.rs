@@ -18,26 +18,48 @@ pub struct Card {
 
 impl From<&String> for Card {
     fn from(value: &String) -> Self {
-        let pattern = Regex::new("Card +([0-9]+): ([0-9 ]+)\\|([0-9 ]+)").unwrap();
-        let captures = pattern.captures(value).unwrap();
-
-        let number = captures.get(1).unwrap().as_str().parse().unwrap();
-        let winners = captures
-            .get(2)
-            .unwrap()
-            .as_str()
-            .split(' ')
-            .filter(|d| d != &"")
-            .map(|d| d.parse().unwrap())
-            .collect();
-        let have = captures
-            .get(3)
-            .unwrap()
-            .as_str()
-            .split(' ')
-            .filter(|d| d != &"")
-            .map(|d| d.parse().unwrap())
-            .collect();
+        //
+        // Card   1: 84 17 45 77 11 66 94 28 71 70 | 45 51 86 83 53 58 64 30 67 96 41 89  8 17 33 50 80 84  6  2 87 72 27 63 77
+        let number: u32 = value[5..8].trim().parse().unwrap();
+        let winners = HashSet::from([
+            value[10..12].trim().parse().unwrap(),
+            value[13..15].trim().parse().unwrap(),
+            value[16..18].trim().parse().unwrap(),
+            value[19..21].trim().parse().unwrap(),
+            value[22..24].trim().parse().unwrap(),
+            value[25..27].trim().parse().unwrap(),
+            value[28..30].trim().parse().unwrap(),
+            value[31..33].trim().parse().unwrap(),
+            value[34..36].trim().parse().unwrap(),
+            value[37..39].trim().parse().unwrap(),
+        ]);
+        let have = vec![
+            value[42..44].trim().parse().unwrap(),
+            value[45..47].trim().parse().unwrap(),
+            value[48..50].trim().parse().unwrap(),
+            value[51..53].trim().parse().unwrap(),
+            value[54..56].trim().parse().unwrap(),
+            value[57..59].trim().parse().unwrap(),
+            value[60..62].trim().parse().unwrap(),
+            value[63..65].trim().parse().unwrap(),
+            value[66..68].trim().parse().unwrap(),
+            value[69..71].trim().parse().unwrap(),
+            value[72..74].trim().parse().unwrap(),
+            value[75..77].trim().parse().unwrap(),
+            value[78..80].trim().parse().unwrap(),
+            value[81..83].trim().parse().unwrap(),
+            value[84..86].trim().parse().unwrap(),
+            value[87..89].trim().parse().unwrap(),
+            value[90..92].trim().parse().unwrap(),
+            value[93..95].trim().parse().unwrap(),
+            value[96..98].trim().parse().unwrap(),
+            value[99..101].trim().parse().unwrap(),
+            value[102..104].trim().parse().unwrap(),
+            value[105..107].trim().parse().unwrap(),
+            value[108..110].trim().parse().unwrap(),
+            value[111..113].trim().parse().unwrap(),
+            value[114..116].trim().parse().unwrap(),
+        ];
         Card {
             number,
             winners,
