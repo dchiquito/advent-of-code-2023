@@ -16,20 +16,20 @@ pub struct Card {
 
 macro_rules! parse_digits {
     ($value:expr, $a:expr) => {{
-        let mut cs = $value[$a..$a + 2].chars();
-        let x = cs.next().unwrap();
-        let y = cs.next().unwrap();
-        if x == ' ' {
-            y.to_digit(10).unwrap()
+        let x = $value[$a];
+        let y = $value[$a + 1];
+        (if x == b' ' {
+            y - b'0'
         } else {
-            x.to_digit(10).unwrap() * 10 + y.to_digit(10).unwrap()
-        }
+            ((x - b'0') * 10) + y - b'0'
+        }) as u32
         // $value[$a..$a + 2].trim_start().parse().unwrap()
     }};
 }
 
 impl From<&String> for Card {
     fn from(value: &String) -> Self {
+        let value = value.as_bytes();
         let winners = [
             parse_digits!(value, 10),
             parse_digits!(value, 13),
