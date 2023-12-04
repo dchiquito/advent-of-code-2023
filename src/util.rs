@@ -63,7 +63,7 @@ pub fn download_input(day: usize) -> Vec<String> {
 }
 
 /// Get the input from the cache, or download it if necessary
-fn get_input(day: usize) -> Vec<String> {
+pub fn get_input(day: usize) -> Vec<String> {
     let path = input_file(day);
     if path.exists() {
         let file = File::open(path).unwrap();
