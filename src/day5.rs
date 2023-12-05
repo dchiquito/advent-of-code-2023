@@ -6,7 +6,7 @@ type Solution = u64;
 pub struct Day5();
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct Range {
+pub struct Range {
     start: u64,
     end: u64,
 }
@@ -22,7 +22,7 @@ impl Range {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct MapRange {
+pub struct MapRange {
     range: Range,
     dest: u64,
 }
@@ -57,7 +57,7 @@ impl MapRange {
 }
 
 #[derive(Debug)]
-struct Mapping {
+pub struct Mapping {
     ranges: Vec<MapRange>,
 }
 
@@ -123,13 +123,13 @@ impl Mapping {
 }
 
 #[derive(Debug)]
-struct Almanac {
+pub struct Almanac {
     seeds: Vec<u64>,
     maps: Vec<Mapping>,
 }
 
-impl From<Vec<String>> for Almanac {
-    fn from(value: Vec<String>) -> Self {
+impl From<&Vec<String>> for Almanac {
+    fn from(value: &Vec<String>) -> Self {
         let seeds = value[0]
             .strip_prefix("seeds: ")
             .unwrap()
@@ -168,7 +168,7 @@ impl Day5 {}
 
 impl DaySolver<Solution> for Day5 {
     fn part1(input: Vec<String>) -> Option<Solution> {
-        let almanac: Almanac = input.into();
+        let almanac: Almanac = (&input).into();
         Some(
             almanac
                 .seeds
@@ -179,7 +179,7 @@ impl DaySolver<Solution> for Day5 {
         )
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
-        let almanac: Almanac = input.into();
+        let almanac: Almanac = (&input).into();
         let mut ranges = vec![];
         let mut i = almanac.seeds.iter();
         while let Some(start) = i.next() {
