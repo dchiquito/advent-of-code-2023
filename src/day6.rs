@@ -5,7 +5,7 @@ type Solution = usize;
 
 pub struct Day6();
 
-struct Race {
+pub struct Race {
     time: usize,
     distance: usize,
 }
@@ -32,7 +32,7 @@ impl Race {
 }
 
 impl Day6 {
-    fn parse1(input: Vec<String>) -> [Race; 4] {
+    pub fn parse1(input: &[String]) -> [Race; 4] {
         let time1 = input[0][10..15].trim_start().parse().unwrap();
         let dist1 = input[1][10..15].trim_start().parse().unwrap();
         let time2 = input[0][17..22].trim_start().parse().unwrap();
@@ -60,7 +60,7 @@ impl Day6 {
             },
         ]
     }
-    fn parse2(input: Vec<String>) -> Race {
+    pub fn parse2(input: &[String]) -> Race {
         let time = input[0][10..]
             .chars()
             .filter(|c| c != &' ')
@@ -79,7 +79,7 @@ impl Day6 {
 
 impl DaySolver<Solution> for Day6 {
     fn part1(input: Vec<String>) -> Option<Solution> {
-        let races = Self::parse1(input);
+        let races = Self::parse1(&input);
         Some(
             races
                 .iter()
@@ -89,7 +89,7 @@ impl DaySolver<Solution> for Day6 {
         )
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
-        let race = Self::parse2(input);
+        let race = Self::parse2(&input);
         Some(race.ways_to_win())
     }
 }
