@@ -75,6 +75,9 @@ impl Hand {
         )
     }
     pub fn value_2(&self) -> HandValue {
+        if !self.cards.contains(&Card(1)) {
+            return self.value();
+        }
         let mut max_value = HandValue(
             self.hand_type_2(2),
             self.cards[0].0,
@@ -116,19 +119,19 @@ impl From<&String> for Hand {
 pub struct Day7();
 
 impl Day7 {
-    fn parse(input: Vec<String>) -> Vec<Hand> {
+    pub fn parse(input: &Vec<String>) -> Vec<Hand> {
         input.iter().map(Hand::from).collect()
     }
 }
 
 impl DaySolver<Solution> for Day7 {
     fn part1(input: Vec<String>) -> Option<Solution> {
-        let mut hands = Self::parse(input);
+        let mut hands = Self::parse(&input);
         hands.sort_by_key(Hand::value);
         Some(hands.iter().enumerate().map(|(i, h)| (i + 1) * h.bid).sum())
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
-        let mut hands = Self::parse(input);
+        let mut hands = Self::parse(&input);
         // Demote jokers to the lowest card value
         hands.iter_mut().for_each(|h| {
             h.cards.iter_mut().for_each(|c| {
