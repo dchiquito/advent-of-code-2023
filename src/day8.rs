@@ -99,41 +99,27 @@ impl DaySolver<Solution> for Day8 {
         (0..nodes.len()).for_each(|i| {
             let mut steps = 0;
             let mut node = nodes[i];
-            // println!("Inspection {i}: {node}");
+            #[allow(clippy::explicit_counter_loop)]
             for dir in docs.directions.iter().cycle() {
                 let (next, is_z) = docs.graph.nodes[node];
-                // println!("({steps}) loopidy {node}: {next:?} {is_z}");
                 if is_z {
-                    println!(
-                        "hmm idx:{i} node:{node} steps:{steps} cycle:{} expectedsteps:{}",
-                        loop_info[i].1,
-                        loop_info[i].1 * 2 + loop_info[i].0
-                    );
-                    if loop_info[i].1 != 0 {
-                        break;
-                    }
                     if loop_info[i].0 == 0 {
                         loop_info[i].0 = steps;
                     } else {
                         loop_info[i].1 = steps - loop_info[i].0;
-                        // break;
+                        break;
                     }
                 }
                 node = next[*dir];
                 steps += 1;
             }
         });
-        println!("{:?}", loop_info);
         let mut steps = loop_info[0].0;
-        // steps = 11578207256935 + loop_info[0].1;
         let mut all_done = false;
         while !all_done {
-            // println!("Checking {steps}");
             all_done = true;
+            #[allow(clippy::needless_range_loop)]
             for i in 0..loop_info.len() {
-                // println!("{:?}", loop_info[i]);
-                // println!("{}", steps - loop_info[i].0);
-                // println!("{}", (steps - loop_info[i].0) % loop_info[i].1);
                 if steps < loop_info[i].0 || (steps - loop_info[i].0) % loop_info[i].1 != 0 {
                     all_done = false;
                     break;
@@ -143,18 +129,6 @@ impl DaySolver<Solution> for Day8 {
                 break;
             }
             steps += loop_info[0].1;
-        }
-        println!("steps {steps}");
-        let lcm: u64 = 13524038372771;
-        for i in 0..loop_info.len() {
-            println!(
-                "hmm {i} {:?} {} {} {} {}",
-                loop_info[i],
-                (steps - loop_info[i].0) % loop_info[i].1,
-                ((steps - loop_info[i].0) / loop_info[i].1),
-                ((steps - loop_info[i].0) / loop_info[i].1) * loop_info[i].1 + loop_info[i].0,
-                loop_info[i].1 % docs.directions.len() as u64,
-            );
         }
         Some(steps)
     }
