@@ -1,4 +1,6 @@
 #![allow(unused)]
+use num::Integer;
+
 use crate::util::DaySolver;
 
 pub type Directions = Vec<usize>;
@@ -114,19 +116,15 @@ impl DaySolver<Solution> for Day8 {
                 steps += 1;
             }
         });
-        // Find the path with the longest cycle, it will get us to the answer the fastest
-        let (start, incr) = *loop_info.iter().max_by_key(|(_, incr)| incr).unwrap();
-        // Remove that path from the loops we are checking
-        let loop_info: Vec<(u64, u64)> = loop_info
-            .iter()
-            .filter(|(a, _b)| start != *a)
-            .copied()
-            .collect();
-        let mut steps = start;
-        let mut all_done = false;
-        while loop_info.iter().any(|(a, b)| (steps - a) % b != 0) {
-            steps += incr;
-        }
-        Some(steps)
+        let (mut start, mut incr) = loop_info[0];
+        loop_info.iter().skip(1).for_each(|(a, b)| {
+            let mut steps = start;
+            while (steps - a) % b != 0 {
+                steps += incr;
+            }
+            start = steps;
+            incr = incr.lcm(a);
+        });
+        Some(start)
     }
 }
