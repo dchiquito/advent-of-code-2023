@@ -94,37 +94,44 @@ impl DaySolver<Solution> for Day8 {
         let docs = Self::parse(&input[..]);
         let mut nodes = docs.graph.all_starts.clone();
 
-        // First element is how many steps it took to find the first Z
-        // Second element is how many steps from there it took to find the second,
-        // which is the same thing as the length of the cycle.
-        let mut loop_info: Vec<(u64, u64)> = nodes.iter().map(|_| (0, 0)).collect();
-        (0..nodes.len()).for_each(|i| {
-            let mut steps = 0;
-            let mut node = nodes[i];
-            #[allow(clippy::explicit_counter_loop)]
-            for dir in docs.directions.iter().cycle() {
-                let (next, is_z) = docs.graph.nodes[node];
-                if is_z {
-                    if loop_info[i].0 == 0 {
-                        loop_info[i].0 = steps;
-                    } else {
-                        loop_info[i].1 = steps - loop_info[i].0;
-                        break;
+        Some(
+            nodes
+                .iter()
+                // Walk every node and identify when they find the first Z and how long it takes to find the second
+                .map(|node| {
+                    let mut steps: u64 = 0;
+                    let mut node = *node;
+                    let mut first: u64 = 0;
+                    for (steps, dir) in (0_u64..).zip(docs.directions.iter().cycle()) {
+                        let (next, is_z) = docs.graph.nodes[node];
+                        if is_z {
+                            if first == 0 {
+                                first = steps;
+                            } else {
+                                // First element is how many steps it took to find the first Z
+                                // Second element is how many steps from there it took to find the second,
+                                // which is the same thing as the length of the cycle.
+                                return (first, steps - first);
+                            }
+                        }
+                        node = next[*dir];
                     }
-                }
-                node = next[*dir];
-                steps += 1;
-            }
-        });
-        let (mut start, mut incr) = loop_info[0];
-        loop_info.iter().skip(1).for_each(|(a, b)| {
-            let mut steps = start;
-            while (steps - a) % b != 0 {
-                steps += incr;
-            }
-            start = steps;
-            incr = incr.lcm(a);
-        });
-        Some(start)
+                    // The loop runs forever, it's not possible to get here.
+                    panic!()
+                })
+                // For the first pair of ghosts, figure out the first moment they are both on a Z.
+                // Use that to create a "virtual" ghost with a much longer cycle.
+                // Repeat the process until there is only one ghost remaining.
+                .reduce(|(start, incr), (a, b)| {
+                    let mut steps = start;
+                    while (steps - a) % b != 0 {
+                        steps += incr;
+                    }
+                    // The length of the cycle is the least common multiple of the two subcycles
+                    (steps, incr.lcm(&a))
+                })
+                .unwrap()
+                .0,
+        )
     }
 }
