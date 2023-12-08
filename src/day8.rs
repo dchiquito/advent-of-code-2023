@@ -36,13 +36,7 @@ impl From<&[String]> for Docs {
             .iter()
             .enumerate()
             .filter_map(|(i, line)| {
-                // if line.chars().nth(2) == Some('A') {
-                // if line.chars().nth(0) == Some('A')
-                //     && line.chars().nth(1) == Some('A')
-                //     && line.chars().nth(2) == Some('A')
-                // {
-                if &line[2..3] == "A" {
-                    // if &line[0..3] == "AAA" {
+                if line.chars().nth(2) == Some('A') {
                     Some(i)
                 } else {
                     None
@@ -120,21 +114,18 @@ impl DaySolver<Solution> for Day8 {
                 steps += 1;
             }
         });
-        let mut steps = loop_info[0].0;
+        // Find the path with the longest cycle, it will get us to the answer the fastest
+        let (start, incr) = *loop_info.iter().max_by_key(|(_, incr)| incr).unwrap();
+        // Remove that path from the loops we are checking
+        let loop_info: Vec<(u64, u64)> = loop_info
+            .iter()
+            .filter(|(a, _b)| start != *a)
+            .copied()
+            .collect();
+        let mut steps = start;
         let mut all_done = false;
-        while !all_done {
-            all_done = true;
-            #[allow(clippy::needless_range_loop)]
-            for i in 0..loop_info.len() {
-                if steps < loop_info[i].0 || (steps - loop_info[i].0) % loop_info[i].1 != 0 {
-                    all_done = false;
-                    break;
-                }
-            }
-            if all_done {
-                break;
-            }
-            steps += loop_info[0].1;
+        while loop_info.iter().any(|(a, b)| (steps - a) % b != 0) {
+            steps += incr;
         }
         Some(steps)
     }
