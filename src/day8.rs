@@ -1,4 +1,6 @@
 #![allow(unused)]
+use std::collections::HashMap;
+
 use num::Integer;
 
 use crate::util::DaySolver;
@@ -31,27 +33,31 @@ impl From<&[String]> for Docs {
                 _ => panic!(),
             })
             .collect();
-        let node_names: Vec<&str> = value[2..].iter().map(|line| &line[0..3]).collect();
-        let start = node_names.iter().position(|x| x == &"AAA").unwrap();
-        let end = node_names.iter().position(|x| x == &"ZZZ").unwrap();
-        let all_starts = node_names
+        let node_name_map: HashMap<&str, usize> = value[2..]
             .iter()
             .enumerate()
-            .filter_map(|(i, line)| {
+            .map(|(i, line)| (&line[0..3], i))
+            .collect();
+        let start = *node_name_map.get(&"AAA").unwrap();
+        let end = *node_name_map.get(&"ZZZ").unwrap();
+        let all_starts = node_name_map
+            .iter()
+            .filter_map(|(line, i)| {
                 if line.chars().nth(2) == Some('A') {
                     Some(i)
                 } else {
                     None
                 }
             })
+            .copied()
             .collect();
         let nodes = value[2..]
             .iter()
             .map(|line| {
                 (
                     [
-                        node_names.iter().position(|x| x == &&line[7..10]).unwrap(),
-                        node_names.iter().position(|x| x == &&line[12..15]).unwrap(),
+                        *node_name_map.get(&line[7..10]).unwrap(),
+                        *node_name_map.get(&line[12..15]).unwrap(),
                     ],
                     line.chars().nth(2) == Some('Z'),
                 )
