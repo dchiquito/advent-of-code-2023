@@ -3,6 +3,7 @@ use advent_of_code_2023::day5;
 use advent_of_code_2023::day5::Day5;
 use advent_of_code_2023::day6::Day6;
 use advent_of_code_2023::day7::Day7;
+use advent_of_code_2023::day8::Day8;
 use advent_of_code_2023::util::{get_input, DaySolver};
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
@@ -58,6 +59,7 @@ pub fn all_benchmarks(c: &mut Criterion) {
     c.bench_function("day 6 part 2", move |b| {
         b.iter_batched(|| input2.clone(), Day6::part2, BatchSize::SmallInput)
     });
+    //
     // Day 7
     let input1 = get_input(7);
     let input2 = input1.clone();
@@ -72,6 +74,19 @@ pub fn all_benchmarks(c: &mut Criterion) {
     });
     c.bench_function("day 7 part 2", move |b| {
         b.iter_batched(|| input2.clone(), Day7::part2, BatchSize::SmallInput)
+    });
+
+    // Day 8
+    let input1 = get_input(8);
+    let input2 = input1.clone();
+    c.bench_function("day 8 parse", |b| {
+        b.iter_batched(|| &input1, Day8::parse, BatchSize::SmallInput)
+    });
+    c.bench_function("day 8 part 1", move |b| {
+        b.iter_batched(|| input1.clone(), Day8::part1, BatchSize::SmallInput)
+    });
+    c.bench_function("day 8 part 2", move |b| {
+        b.iter_batched(|| input2.clone(), Day8::part2, BatchSize::SmallInput)
     });
 }
 

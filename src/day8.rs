@@ -74,9 +74,15 @@ impl From<&[String]> for Docs {
 type Solution = u64;
 pub struct Day8();
 
+impl Day8 {
+    pub fn parse(input: &[String]) -> Docs {
+        Docs::from(input)
+    }
+}
+
 impl DaySolver<Solution> for Day8 {
     fn part1(input: Vec<String>) -> Option<Solution> {
-        let docs = Docs::from(&input[..]);
+        let docs = Self::parse(&input[..]);
         let mut node = docs.graph.start;
         let mut steps = 0;
         for dir in docs.directions.iter().cycle() {
@@ -89,7 +95,7 @@ impl DaySolver<Solution> for Day8 {
         Some(steps)
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
-        let docs = Docs::from(&input[..]);
+        let docs = Self::parse(&input[..]);
         let mut nodes = docs.graph.all_starts.clone();
 
         // First element is how many steps it took to find the first Z
