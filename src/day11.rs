@@ -12,7 +12,7 @@ pub struct Observation {
 impl Observation {
     pub fn expand(&mut self, factor: u64) {
         // TODO this can be removed for the first call
-        self.galaxies.sort_by_key(|(x, y)| *y);
+        // self.galaxies.sort_by_key(|(x, y)| *y);
         let mut last_y = 0;
         let mut y_expand = 0;
         for i in 0..self.galaxies.len() {
@@ -34,6 +34,18 @@ impl Observation {
             last_x = x;
             self.galaxies[i].0 += x_expand;
         }
+    }
+    pub fn distances(&self) -> u64 {
+        self.galaxies
+            .iter()
+            .enumerate()
+            .map(|(i, (x1, y1))| {
+                self.galaxies[i + 1..]
+                    .iter()
+                    .map(|(x2, y2)| x1.abs_diff(*x2) + y1.abs_diff(*y2))
+                    .sum::<u64>()
+            })
+            .sum()
     }
 }
 
@@ -63,33 +75,11 @@ impl DaySolver<Solution> for Day11 {
     fn part1(input: Vec<String>) -> Option<Solution> {
         let mut obs = Self::parse(&input);
         obs.expand(1);
-        Some(
-            obs.galaxies
-                .iter()
-                .enumerate()
-                .map(|(i, (x1, y1))| {
-                    obs.galaxies[i + 1..]
-                        .iter()
-                        .map(|(x2, y2)| x1.abs_diff(*x2) + y1.abs_diff(*y2))
-                        .sum::<u64>()
-                })
-                .sum(),
-        )
+        Some(obs.distances())
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
         let mut obs = Self::parse(&input);
         obs.expand(999999);
-        Some(
-            obs.galaxies
-                .iter()
-                .enumerate()
-                .map(|(i, (x1, y1))| {
-                    obs.galaxies[i + 1..]
-                        .iter()
-                        .map(|(x2, y2)| x1.abs_diff(*x2) + y1.abs_diff(*y2))
-                        .sum::<u64>()
-                })
-                .sum(),
-        )
+        Some(obs.distances())
     }
 }
