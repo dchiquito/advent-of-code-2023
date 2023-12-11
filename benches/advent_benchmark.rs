@@ -1,3 +1,4 @@
+use advent_of_code_2023::day11::Day11;
 use advent_of_code_2023::day4::Day4;
 use advent_of_code_2023::day5;
 use advent_of_code_2023::day5::Day5;
@@ -101,6 +102,19 @@ pub fn all_benchmarks(c: &mut Criterion) {
     });
     c.bench_function("day 9 part 2", move |b| {
         b.iter_batched(|| input2.clone(), Day9::part2, BatchSize::SmallInput)
+    });
+
+    // Day 11
+    let input1 = get_input(11);
+    let input2 = input1.clone();
+    c.bench_function("day 11 parse", |b| {
+        b.iter_batched(|| &input1, Day11::parse, BatchSize::SmallInput)
+    });
+    c.bench_function("day 11 part 1", move |b| {
+        b.iter_batched(|| input1.clone(), Day11::part1, BatchSize::SmallInput)
+    });
+    c.bench_function("day 11 part 2", move |b| {
+        b.iter_batched(|| input2.clone(), Day11::part2, BatchSize::SmallInput)
     });
 }
 

@@ -40,7 +40,7 @@ impl Observation {
 pub struct Day11();
 
 impl Day11 {
-    fn parse(input: &[String]) -> Observation {
+    pub fn parse(input: &[String]) -> Observation {
         let galaxies: Vec<Galaxy> = input
             .iter()
             .enumerate()
