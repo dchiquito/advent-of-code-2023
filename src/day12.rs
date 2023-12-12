@@ -102,7 +102,6 @@ impl Memo {
         self.memos.get(&(springs.len(), bads.len())).copied()
     }
     pub fn insert(&mut self, springs: &[Spring], bads: &[usize], value: u64) -> u64 {
-        // TODO size constraint?
         self.memos.insert((springs.len(), bads.len()), value);
         value
     }
@@ -113,6 +112,31 @@ pub struct Day12();
 impl Day12 {
     pub fn parse(input: &[String]) -> Vec<Row> {
         input.iter().map(Row::from).collect()
+    }
+    pub fn parse2(input: &[String]) -> Vec<Row> {
+        input
+            .iter()
+            .map(Row::from)
+            .map(|row| {
+                let mut springs = Vec::with_capacity((row.springs.len() + 1) * 5);
+                springs.extend(row.springs.iter().copied());
+                springs.push(Spring::Dunno);
+                springs.extend(row.springs.iter().copied());
+                springs.push(Spring::Dunno);
+                springs.extend(row.springs.iter().copied());
+                springs.push(Spring::Dunno);
+                springs.extend(row.springs.iter().copied());
+                springs.push(Spring::Dunno);
+                springs.extend(row.springs.iter().copied());
+                let mut bads = Vec::with_capacity((row.bads.len()) * 5);
+                bads.extend(row.bads.iter().copied());
+                bads.extend(row.bads.iter().copied());
+                bads.extend(row.bads.iter().copied());
+                bads.extend(row.bads.iter().copied());
+                bads.extend(row.bads.iter().copied());
+                Row { springs, bads }
+            })
+            .collect()
     }
     fn solve_1(springs: &[Spring], bads: &[usize]) -> u64 {
         // There are no bad sections, verify that there are no bad springs
@@ -198,37 +222,19 @@ impl DaySolver<Solution> for Day12 {
         let rows = Self::parse(&input);
         Some(
             rows.iter()
-                .map(|row| Self::solve_2_memo(&mut Memo::default(), &row.springs, &row.bads))
+                .map(|row| Self::solve_1(&row.springs, &row.bads))
                 .sum(),
         )
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
-        let rows = Self::parse(&input);
-        let rows: Vec<Row> = rows
-            .iter()
-            .map(|row| {
-                let mut springs = vec![];
-                springs.extend(row.springs.iter().copied());
-                springs.push(Spring::Dunno);
-                springs.extend(row.springs.iter().copied());
-                springs.push(Spring::Dunno);
-                springs.extend(row.springs.iter().copied());
-                springs.push(Spring::Dunno);
-                springs.extend(row.springs.iter().copied());
-                springs.push(Spring::Dunno);
-                springs.extend(row.springs.iter().copied());
-                let mut bads = vec![];
-                bads.extend(row.bads.iter().copied());
-                bads.extend(row.bads.iter().copied());
-                bads.extend(row.bads.iter().copied());
-                bads.extend(row.bads.iter().copied());
-                bads.extend(row.bads.iter().copied());
-                Row { springs, bads }
-            })
-            .collect();
+        let rows = Self::parse2(&input);
         Some(
             rows.iter()
-                .map(|row| Self::solve_2_memo(&mut Memo::default(), &row.springs, &row.bads))
+                .enumerate()
+                .map(|(i, row)| {
+                    let mut memo = Memo::default();
+                    Self::solve_2_memo(&mut memo, &row.springs, &row.bads)
+                })
                 .sum(),
         )
     }

@@ -122,8 +122,11 @@ pub fn all_benchmarks(c: &mut Criterion) {
     // Day 12
     let input1 = get_input(12);
     let input2 = input1.clone();
-    c.bench_function("day 12 parse", |b| {
+    c.bench_function("day 12 parse 1", |b| {
         b.iter_batched(|| &input1, Day12::parse, BatchSize::SmallInput)
+    });
+    c.bench_function("day 12 parse 2", |b| {
+        b.iter_batched(|| &input1, Day12::parse2, BatchSize::SmallInput)
     });
     c.bench_function("day 12 part 1", move |b| {
         b.iter_batched(|| input1.clone(), Day12::part1, BatchSize::SmallInput)
