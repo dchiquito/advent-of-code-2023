@@ -74,7 +74,7 @@ impl Memo {
 pub struct Day12();
 
 impl Day12 {
-    fn parse(input: &[String]) -> Vec<Row> {
+    pub fn parse(input: &[String]) -> Vec<Row> {
         input.iter().map(Row::from).collect()
     }
     fn solve_1(springs: &[Spring], bads: &[usize]) -> u64 {
