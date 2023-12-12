@@ -1,4 +1,6 @@
 #![allow(unused)]
+use std::collections::HashMap;
+
 use crate::util::DaySolver;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -54,7 +56,20 @@ impl From<&String> for Row {
     }
 }
 
-type State<'a> = (&'a [Spring], &'a [usize]);
+#[derive(Default)]
+pub struct Memo {
+    memos: HashMap<(usize, usize), u64>,
+}
+impl Memo {
+    pub fn get(&self, springs: &[Spring], bads: &[usize]) -> Option<u64> {
+        self.memos.get(&(springs.len(), bads.len())).copied()
+    }
+    pub fn insert(&mut self, springs: &[Spring], bads: &[usize], value: u64) -> u64 {
+        // TODO size constraint?
+        self.memos.insert((springs.len(), bads.len()), value);
+        value
+    }
+}
 
 pub struct Day12();
 
@@ -96,6 +111,48 @@ impl Day12 {
             invalid_possibilities
         }
     }
+    fn solve_2(memo: &mut Memo, springs: &[Spring], bads: &[usize]) -> u64 {
+        // There are no bad sections, verify that there are no bad springs
+        if bads.is_empty() {
+            if springs.iter().all(|s| s != &Spring::Bad) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+        // Check that we can still hypothetically cram the bad sections into the springs we have
+        // TODO can cache this sum and pass it in
+        if springs.len() < bads.iter().sum::<usize>() + bads.len() - 1 {
+            return 0;
+        }
+        let bad = bads[0];
+        let valid_start = springs[0..bad].iter().all(Spring::maybe_bad);
+        if bad == springs.len() {
+            if valid_start {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+        let invalid_possibilities = if springs[0].maybe_good() {
+            Self::solve_2_memo(memo, &springs[1..], bads)
+        } else {
+            0
+        };
+        if valid_start && springs[bad].maybe_good() {
+            invalid_possibilities + Self::solve_2_memo(memo, &springs[bad + 1..], &bads[1..])
+        } else {
+            invalid_possibilities
+        }
+    }
+    fn solve_2_memo(memo: &mut Memo, springs: &[Spring], bads: &[usize]) -> u64 {
+        if let Some(value) = memo.get(springs, bads) {
+            value
+        } else {
+            let value = Self::solve_2(memo, springs, bads);
+            memo.insert(springs, bads, value)
+        }
+    }
 }
 
 type Solution = u64;
@@ -104,7 +161,7 @@ impl DaySolver<Solution> for Day12 {
         let rows = Self::parse(&input);
         Some(
             rows.iter()
-                .map(|row| Self::solve_1(&row.springs, &row.bads))
+                .map(|row| Self::solve_2_memo(&mut Memo::default(), &row.springs, &row.bads))
                 .sum(),
         )
     }
@@ -132,17 +189,11 @@ impl DaySolver<Solution> for Day12 {
                 Row { springs, bads }
             })
             .collect();
-        // Don't even try
-        // Some(
-        //     rows.iter()
-        //         .map(|row| {
-        //             let x = Self::solve_1(&row.springs, &row.bads);
-        //             println!("{row:?} {x}");
-        //             x
-        //         })
-        //         .sum(),
-        // );
-        None
+        Some(
+            rows.iter()
+                .map(|row| Self::solve_2_memo(&mut Memo::default(), &row.springs, &row.bads))
+                .sum(),
+        )
     }
 }
 
