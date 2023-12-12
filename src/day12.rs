@@ -45,14 +45,45 @@ pub struct Row {
 }
 impl From<&String> for Row {
     fn from(value: &String) -> Self {
-        let (left, right) = value.split_once(' ').unwrap();
-        Row {
-            springs: left.chars().map(Spring::from).collect(),
-            bads: right
-                .split(',')
-                .map(|digits| digits.parse().unwrap())
-                .collect(),
+        let bytes = value.as_bytes();
+        let mut springs = Vec::with_capacity(25);
+        let mut i = 0;
+        while bytes[i] != b' ' {
+            springs.push(Spring::from(char::from(bytes[i])));
+            i += 1;
         }
+        i += 1;
+        let mut bads = Vec::with_capacity(6);
+        let mut start = i;
+        while i < bytes.len() {
+            if bytes[i] == b',' {
+                bads.push(
+                    std::str::from_utf8(&bytes[start..i])
+                        .unwrap()
+                        .parse()
+                        .unwrap(),
+                );
+                i += 1;
+                start = i;
+            }
+            i += 1;
+        }
+        bads.push(
+            std::str::from_utf8(&bytes[start..])
+                .unwrap()
+                .parse()
+                .unwrap(),
+        );
+        Row { springs, bads }
+        // Much more legible, but slower:
+        // let (left, right) = value.split_once(' ').unwrap();
+        // Row {
+        //     springs: left.chars().map(Spring::from).collect(),
+        //     bads: right
+        //         .split(',')
+        //         .map(|digits| digits.parse().unwrap())
+        //         .collect(),
+        // }
     }
 }
 
