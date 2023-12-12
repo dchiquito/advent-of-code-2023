@@ -87,9 +87,15 @@ impl From<&String> for Row {
     }
 }
 
-#[derive(Default)]
 pub struct Memo {
     memos: HashMap<(usize, usize), u64>,
+}
+impl Default for Memo {
+    fn default() -> Self {
+        Self {
+            memos: HashMap::with_capacity(2000),
+        }
+    }
 }
 impl Memo {
     pub fn get(&self, springs: &[Spring], bads: &[usize]) -> Option<u64> {
