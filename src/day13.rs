@@ -45,7 +45,22 @@ impl Field {
         })
     }
     pub fn vertical_reflection_2(&self) -> Option<usize> {
-        self.invert().horizontal_reflection_2()
+        (0..self.tiles[0].len() - 1).find(|&split| {
+            (0..(split + 1).min(self.tiles[0].len() - split - 1))
+                .map(|x| {
+                    (0..self.tiles.len())
+                        .map(|y| {
+                            if self.tiles[y][split - x] == self.tiles[y][split + 1 + x] {
+                                0
+                            } else {
+                                1
+                            }
+                        })
+                        .sum::<usize>()
+                })
+                .sum::<usize>()
+                == 1
+        })
     }
     pub fn invert(&self) -> Field {
         Field {
