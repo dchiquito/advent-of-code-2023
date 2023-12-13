@@ -31,14 +31,8 @@ impl Field {
             (0..(split + 1).min(self.tiles.len() - split - 1))
                 .map(|y| {
                     (0..self.tiles[0].len())
-                        .map(|x| {
-                            if self.tiles[split - y][x] == self.tiles[split + 1 + y][x] {
-                                0
-                            } else {
-                                1
-                            }
-                        })
-                        .sum::<usize>()
+                        .filter(|x| self.tiles[split - y][*x] != self.tiles[split + 1 + y][*x])
+                        .count()
                 })
                 .sum::<usize>()
                 == 1
@@ -49,14 +43,8 @@ impl Field {
             (0..(split + 1).min(self.tiles[0].len() - split - 1))
                 .map(|x| {
                     (0..self.tiles.len())
-                        .map(|y| {
-                            if self.tiles[y][split - x] == self.tiles[y][split + 1 + x] {
-                                0
-                            } else {
-                                1
-                            }
-                        })
-                        .sum::<usize>()
+                        .filter(|y| self.tiles[*y][split - x] != self.tiles[*y][split + 1 + x])
+                        .count()
                 })
                 .sum::<usize>()
                 == 1
