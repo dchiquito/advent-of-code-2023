@@ -1,20 +1,7 @@
 #![allow(unused)]
 use crate::util::DaySolver;
 
-#[derive(Clone, Eq, PartialEq)]
-pub enum Tile {
-    Ash,
-    Rock,
-}
-impl From<char> for Tile {
-    fn from(value: char) -> Self {
-        match value {
-            '.' => Tile::Ash,
-            '#' => Tile::Rock,
-            _ => panic!(),
-        }
-    }
-}
+type Tile = char;
 
 #[derive(Default)]
 pub struct Field {
@@ -63,11 +50,7 @@ impl Field {
     pub fn invert(&self) -> Field {
         Field {
             tiles: (0..self.tiles[0].len())
-                .map(|x| {
-                    (0..self.tiles.len())
-                        .map(|y| self.tiles[y][x].clone())
-                        .collect()
-                })
+                .map(|x| (0..self.tiles.len()).map(|y| self.tiles[y][x]).collect())
                 .collect(),
         }
     }
@@ -84,7 +67,7 @@ impl Day13 {
                 fields.push(field);
                 field = Field::default();
             } else {
-                field.tiles.push(line.chars().map(Tile::from).collect());
+                field.tiles.push(line.chars().collect());
             }
         }
         fields.push(field);
