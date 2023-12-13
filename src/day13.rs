@@ -28,26 +28,30 @@ impl Field {
     }
     pub fn horizontal_reflection_2(&self) -> Option<usize> {
         (0..self.tiles.len() - 1).find(|&split| {
-            (0..(split + 1).min(self.tiles.len() - split - 1))
-                .map(|y| {
-                    (0..self.tiles[0].len())
-                        .filter(|x| self.tiles[split - y][*x] != self.tiles[split + 1 + y][*x])
-                        .count()
-                })
-                .sum::<usize>()
-                == 1
+            (0..(split + 1).min(self.tiles.len() - split - 1)).try_fold(0, |acc, y| {
+                let smudges = (0..self.tiles[0].len())
+                    .filter(|x| self.tiles[split - y][*x] != self.tiles[split + 1 + y][*x])
+                    .count();
+                if acc + smudges <= 1 {
+                    Some(acc + smudges)
+                } else {
+                    None
+                }
+            }) == Some(1)
         })
     }
     pub fn vertical_reflection_2(&self) -> Option<usize> {
         (0..self.tiles[0].len() - 1).find(|&split| {
-            (0..(split + 1).min(self.tiles[0].len() - split - 1))
-                .map(|x| {
-                    (0..self.tiles.len())
-                        .filter(|y| self.tiles[*y][split - x] != self.tiles[*y][split + 1 + x])
-                        .count()
-                })
-                .sum::<usize>()
-                == 1
+            (0..(split + 1).min(self.tiles[0].len() - split - 1)).try_fold(0, |acc, x| {
+                let smudges = (0..self.tiles.len())
+                    .filter(|y| self.tiles[*y][split - x] != self.tiles[*y][split + 1 + x])
+                    .count();
+                if acc + smudges <= 1 {
+                    Some(acc + smudges)
+                } else {
+                    None
+                }
+            }) == Some(1)
         })
     }
     pub fn invert(&self) -> Field {
