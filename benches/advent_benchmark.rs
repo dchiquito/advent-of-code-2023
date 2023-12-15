@@ -171,6 +171,9 @@ pub fn all_benchmarks(c: &mut Criterion) {
     c.bench_function("day 15 part 1", move |b| {
         b.iter_batched(|| input1.clone(), Day15::part1, BatchSize::SmallInput)
     });
+    c.bench_function("day 15 part 2 parse", |b| {
+        b.iter_batched(|| &input2, Day15::part2_load, BatchSize::SmallInput)
+    });
     c.bench_function("day 15 part 2", move |b| {
         b.iter_batched(|| input2.clone(), Day15::part2, BatchSize::SmallInput)
     });
