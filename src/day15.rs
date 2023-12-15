@@ -12,7 +12,7 @@ pub struct HASHMAP {
 impl Default for HASHMAP {
     fn default() -> Self {
         HASHMAP {
-            boxes: array::from_fn(|_| Vec::with_capacity(20)),
+            boxes: array::from_fn(|_| Vec::with_capacity(10)),
         }
     }
 }
@@ -42,10 +42,10 @@ impl HASHMAP {
         if operation.last() == Some(&b'-') {
             self.remove(&operation[0..operation.len() - 1]);
         } else {
-            let mut iter = operation.split(|c| c == &b'=');
-            let key = iter.next().unwrap();
-            let value = iter.next().unwrap();
-            self.insert(key, (value[0] - b'0') as u64);
+            self.insert(
+                &operation[0..operation.len() - 2],
+                (operation.last().unwrap() - b'0') as u64,
+            );
         }
     }
     pub fn focusing_power(&self) -> u64 {
@@ -94,8 +94,9 @@ impl DaySolver<Solution> for Day15 {
     fn part1(input: Vec<String>) -> Option<Solution> {
         Some(
             input[0]
-                .split(',')
-                .map(|step| Self::hash(0, step.as_bytes()) as u64)
+                .as_bytes()
+                .split(|c| c == &b',')
+                .map(|step| Self::hash(0, step) as u64)
                 .sum(),
         )
     }
