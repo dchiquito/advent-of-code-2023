@@ -91,7 +91,7 @@ impl Platform {
 pub struct Day14();
 
 impl Day14 {
-    fn parse(input: &[String]) -> Platform {
+    pub fn parse(input: &[String]) -> Platform {
         Platform {
             rocks: input.iter().map(|line| line.chars().collect()).collect(),
         }

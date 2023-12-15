@@ -9,6 +9,7 @@ use advent_of_code_2023::day9::Day9;
 use advent_of_code_2023::day11::Day11;
 use advent_of_code_2023::day12::Day12;
 use advent_of_code_2023::day13::Day13;
+use advent_of_code_2023::day14::Day14;
 use advent_of_code_2023::util::{get_input, DaySolver};
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
@@ -147,6 +148,19 @@ pub fn all_benchmarks(c: &mut Criterion) {
     });
     c.bench_function("day 13 part 2", move |b| {
         b.iter_batched(|| input2.clone(), Day13::part2, BatchSize::SmallInput)
+    });
+
+    // Day 14
+    let input1 = get_input(14);
+    let input2 = input1.clone();
+    c.bench_function("day 14 parse", |b| {
+        b.iter_batched(|| &input1, Day14::parse, BatchSize::SmallInput)
+    });
+    c.bench_function("day 14 part 1", move |b| {
+        b.iter_batched(|| input1.clone(), Day14::part1, BatchSize::SmallInput)
+    });
+    c.bench_function("day 14 part 2", move |b| {
+        b.iter_batched(|| input2.clone(), Day14::part2, BatchSize::SmallInput)
     });
 }
 
