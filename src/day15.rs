@@ -17,7 +17,7 @@ impl Default for HASHMAP {
     }
 }
 impl HASHMAP {
-    pub fn remove(&mut self, key: &str) {
+    pub fn remove(&mut self, key: &[u8]) {
         let hash = Day15::big_hash(0, key);
         let index = Day15::hash(0, key);
         for i in 0..self.boxes[index].len() {
@@ -27,7 +27,7 @@ impl HASHMAP {
             }
         }
     }
-    pub fn insert(&mut self, key: &str, value: u64) {
+    pub fn insert(&mut self, key: &[u8], value: u64) {
         let hash = Day15::big_hash(0, key);
         let index = Day15::hash(0, key);
         for i in 0..self.boxes[index].len() {
@@ -38,12 +38,14 @@ impl HASHMAP {
         }
         self.boxes[index].push((hash, value));
     }
-    pub fn operate(&mut self, operation: &str) {
-        if operation.ends_with('-') {
+    pub fn operate(&mut self, operation: &[u8]) {
+        if operation.last() == Some(&b'-') {
             self.remove(&operation[0..operation.len() - 1]);
         } else {
-            let (key, value) = operation.split_once('=').unwrap();
-            self.insert(key, value.parse().unwrap());
+            let mut iter = operation.split(|c| c == &b'=');
+            let key = iter.next().unwrap();
+            let value = iter.next().unwrap();
+            self.insert(key, (value[0] - b'0') as u64);
         }
     }
     pub fn focusing_power(&self) -> u64 {
@@ -63,26 +65,26 @@ impl HASHMAP {
 }
 
 impl Day15 {
-    pub fn hash(current: usize, value: &str) -> usize {
+    pub fn hash(current: usize, value: &[u8]) -> usize {
         value
-            .as_bytes()
             .iter()
             .map(|c| *c as usize)
             .fold(0, |c, v| ((c + v) * 17) % 256)
     }
-    pub fn big_hash(current: u64, value: &str) -> u64 {
+    pub fn big_hash(current: u64, value: &[u8]) -> u64 {
         value
-            .as_bytes()
             .iter()
             .map(|c| *c as u64)
             .enumerate()
             .map(|(i, c)| (2 << i) * c)
             .sum()
-        // .fold(0, |c, v| (c + v) * 17)
     }
     pub fn part2_load(input: &[String]) -> HASHMAP {
         let mut hm = HASHMAP::default();
-        input[0].split(',').for_each(|step| hm.operate(step));
+        input[0]
+            .as_bytes()
+            .split(|c| c == &b',')
+            .for_each(|step| hm.operate(step));
         hm
     }
 }
@@ -93,7 +95,7 @@ impl DaySolver<Solution> for Day15 {
         Some(
             input[0]
                 .split(',')
-                .map(|step| Self::hash(0, step) as u64)
+                .map(|step| Self::hash(0, step.as_bytes()) as u64)
                 .sum(),
         )
     }
