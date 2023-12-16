@@ -81,7 +81,7 @@ impl Contraption {
             && !visitations.has_visited(x, y, &dir)
         {
             visitations.visit(x, y, &dir);
-            match self.get(y, x) {
+            match self.get(x, y) {
                 b'.' => (x, y) = dir.apply(x, y),
                 b'/' => {
                     dir = match dir {
