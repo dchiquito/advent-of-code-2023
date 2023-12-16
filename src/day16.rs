@@ -127,7 +127,7 @@ pub struct Day16();
 
 type Solution = usize;
 impl Day16 {
-    fn parse(input: &[String]) -> Contraption {
+    pub fn parse(input: &[String]) -> Contraption {
         Contraption::from(input)
     }
 }
