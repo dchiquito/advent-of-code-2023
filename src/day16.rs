@@ -60,21 +60,29 @@ impl Visitations {
 
 pub struct Contraption {
     tiles: Vec<Vec<u8>>,
+    width: usize,
+    height: usize,
 }
 impl From<&[String]> for Contraption {
     fn from(value: &[String]) -> Self {
+        let tiles: Vec<Vec<u8>> = value.iter().map(|line| line.as_bytes().into()).collect();
         Contraption {
-            tiles: value.iter().map(|line| line.as_bytes().into()).collect(),
+            width: tiles[0].len(),
+            height: tiles.len(),
+            tiles,
         }
     }
 }
 impl Contraption {
+    pub fn get(&self, x: i32, y: i32) -> u8 {
+        self.tiles[y as usize][x as usize]
+    }
     pub fn find_visits(&self, visitations: &mut Visitations, mut x: i32, mut y: i32, mut dir: Dir) {
         while !(x < 0 || x >= self.tiles[0].len() as i32 || y < 0 || y >= self.tiles.len() as i32)
             && !visitations.has_visited(x, y, &dir)
         {
             visitations.visit(x, y, &dir);
-            match self.tiles[y as usize][x as usize] {
+            match self.get(y, x) {
                 b'.' => (x, y) = dir.apply(x, y),
                 b'/' => {
                     dir = match dir {
@@ -142,11 +150,11 @@ impl DaySolver<Solution> for Day16 {
     fn part2(input: Vec<String>) -> Option<Solution> {
         let contraption = Self::parse(&input);
         let mut max: usize = 0;
-        for x in 0..contraption.tiles[0].len() {
+        for x in 0..contraption.width {
             max = max.max(contraption.visits(x, 0, Dir::N));
             max = max.max(contraption.visits(x, 0, Dir::S));
         }
-        for y in 0..contraption.tiles.len() {
+        for y in 0..contraption.height {
             max = max.max(contraption.visits(0, y, Dir::E));
             max = max.max(contraption.visits(0, y, Dir::W));
         }
