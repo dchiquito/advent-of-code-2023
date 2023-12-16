@@ -33,28 +33,27 @@ impl Dir {
 
 pub struct Visitations {
     /// (NS, EW)
-    tiles: Vec<Vec<[bool; 4]>>,
+    tiles: Vec<[bool; 4]>,
+    width: usize,
 }
 impl From<&Contraption> for Visitations {
-    fn from(value: &Contraption) -> Self {
+    fn from(contraption: &Contraption) -> Self {
         Visitations {
-            tiles: vec![vec![[false; 4]; value.tiles[0].len()]; value.tiles.len()],
+            tiles: vec![[false; 4]; contraption.width * contraption.height],
+            width: contraption.width,
         }
     }
 }
 
 impl Visitations {
     pub fn visits(&self) -> usize {
-        self.tiles
-            .iter()
-            .map(|row| row.iter().filter(|v| v.iter().any(|x| *x)).count())
-            .sum()
+        self.tiles.iter().filter(|v| v.iter().any(|x| *x)).count()
     }
     pub fn visit(&mut self, x: i32, y: i32, dir: &Dir) {
-        self.tiles[y as usize][x as usize][dir.index()] = true;
+        self.tiles[(y as usize * self.width) + x as usize][dir.index()] = true;
     }
     pub fn has_visited(&self, x: i32, y: i32, dir: &Dir) -> bool {
-        self.tiles[y as usize][x as usize][dir.index()]
+        self.tiles[(y as usize * self.width) + x as usize][dir.index()]
     }
 }
 
