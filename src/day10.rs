@@ -1,4 +1,6 @@
 #![allow(unused)]
+use std::collections::HashMap;
+
 use crate::util::DaySolver;
 
 type Solution = usize;
@@ -24,7 +26,7 @@ impl Direction {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Pipe {
     NS,
     NE,
@@ -84,6 +86,16 @@ impl Pipe {
             },
         }
     }
+    pub fn c(&self) -> char {
+        match self {
+            Pipe::NS => '│',
+            Pipe::NE => '└',
+            Pipe::NW => '┘',
+            Pipe::SE => '┌',
+            Pipe::SW => '┐',
+            Pipe::EW => '─',
+        }
+    }
 }
 
 pub struct Field {
@@ -94,7 +106,6 @@ pub struct Field {
 
 impl Field {
     pub fn transit(&self, transit: &Transit) -> Transit {
-        println!("Walkin {transit:?}");
         let dir = self.pipes[transit.y][transit.x]
             .as_ref()
             .unwrap()
@@ -187,28 +198,65 @@ impl DaySolver<Solution> for Day10 {
         let field = Self::parse(&input);
         let (y, x) = field.start;
         let (mut a, mut b) = field.starting_transits();
-        println!("Here we go {x} {y} {a:?} {b:?}");
         let mut steps = 1;
         while a.x != b.x || a.y != b.y {
             a = field.transit(&a);
             b = field.transit(&b);
             steps += 1;
-            println!("   {steps} {a:?} {b:?}");
         }
         Some(steps)
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
         // Here's the algorithm:
-        // Walk the loop using the part 1 code, marking all the cells that are on the path as PATH.
-        // Walk the loop again, this time marking all the cells to the right of the path as RIGHT,
-        // if they are not already marked PATH.
-        // Flood fill: Iterate over the whole field. if you find a RIGHT cell that has not been
-        // marked as filled yet, recursively check if it's adjacents are not RIGHT or PATH and set
-        // them to RIGHT if they are neither.
-        // Count the number of RIGHTs.
-        // If at any point you encounter an out of bounds coordinate, then the right side is the
-        // outside. Simply do it again, but traverse in the opposite direction so the right is the
-        // inside.
-        None
+        // Walk the path, mark all pipes that are part of the path.
+        // For every row, slide along until you find a |, L, or F pipe that is part of the path.
+        // Continue sliding until finding a |, 7, or J pipe. You are now inside.
+        // Continue sliding, counting squares until you find a |, L, or F pipe.
+        // Continue sliding until finding a |, 7, or J pipe. You are now outside. Repeat.
+        let field = Self::parse(&input);
+        let mut visited: HashMap<(usize, usize), Pipe> = HashMap::new();
+        let (start_y, start_x) = field.start;
+        // I'm just hardcoding this, too lazy to figure out from first principles
+        visited.insert((start_y, start_x), Pipe::NS);
+        let mut transit = field.starting_transits().0;
+        while transit.x != start_x || transit.y != start_y {
+            visited.insert(
+                (transit.y, transit.x),
+                field.pipes[transit.y][transit.x].as_ref().unwrap().clone(),
+            );
+            transit = field.transit(&transit);
+        }
+        let mut sum = 0;
+        for y in 0..field.pipes.len() {
+            let mut inside = false;
+            let mut border_start = None;
+            for x in 0..field.pipes[0].len() {
+                if let Some(p) = visited.get(&(y, x)) {
+                    print!("{}", p.c());
+                    if p == &Pipe::NS {
+                        inside = !inside;
+                    } else if let Some(start) = &border_start {
+                        if start == &Pipe::SE && p == &Pipe::NW {
+                            inside = !inside;
+                        }
+                        if start == &Pipe::NE && p == &Pipe::SW {
+                            inside = !inside;
+                        }
+                        if p != &Pipe::EW {
+                            border_start = None;
+                        }
+                    } else {
+                        border_start = Some(p.clone());
+                    }
+                } else if inside {
+                    print!(".");
+                    sum += 1;
+                } else {
+                    print!(" ");
+                }
+            }
+            println!();
+        }
+        Some(sum)
     }
 }
