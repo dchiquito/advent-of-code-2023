@@ -101,7 +101,7 @@ pub struct Distances {
     visited: HashMap<Prospect, usize>,
 }
 impl Distances {
-    pub fn iterate(&mut self, weights: &Weights) -> Option<usize> {
+    pub fn iterate1(&mut self, weights: &Weights) -> Option<usize> {
         let prospect = self.unvisited.pop().unwrap();
         if prospect.xy == (weights.width - 1, weights.height - 1) {
             return Some(prospect.distance);
@@ -150,6 +150,57 @@ impl Distances {
 
         None
     }
+    pub fn iterate2(&mut self, weights: &Weights) -> Option<usize> {
+        let prospect = self.unvisited.pop().unwrap();
+        if prospect.consecutive >= 4 && prospect.xy == (weights.width - 1, weights.height - 1) {
+            return Some(prospect.distance);
+        }
+        if let Some(prev_distance) = self.visited.get(&prospect) {
+            if prospect.distance < *prev_distance {
+                let ddd = prospect.distance;
+                self.visited.insert(prospect, ddd);
+            }
+            return None;
+        }
+        self.visited.insert(prospect.clone(), prospect.distance);
+        if prospect.consecutive >= 4 {
+            let (first_turn, second_turn) = prospect.dir.turns();
+            // First turn
+            let xy = first_turn.step(prospect.xy);
+            if let Some(weight) = weights.get(xy) {
+                self.unvisited.push(Prospect {
+                    distance: prospect.distance + weight,
+                    xy,
+                    dir: first_turn,
+                    consecutive: 1,
+                });
+            }
+            // Second turn
+            let xy = second_turn.step(prospect.xy);
+            if let Some(weight) = weights.get(xy) {
+                self.unvisited.push(Prospect {
+                    distance: prospect.distance + weight,
+                    xy,
+                    dir: second_turn,
+                    consecutive: 1,
+                });
+            }
+        }
+        // Straight ahead, if possible
+        if prospect.consecutive < 10 {
+            let xy = prospect.dir.step(prospect.xy);
+            if let Some(weight) = weights.get(xy) {
+                self.unvisited.push(Prospect {
+                    distance: prospect.distance + weight,
+                    xy,
+                    dir: prospect.dir,
+                    consecutive: prospect.consecutive + 1,
+                });
+            }
+        }
+
+        None
+    }
 }
 
 pub struct Day17();
@@ -158,7 +209,7 @@ impl Day17 {
     pub fn parse(input: &[String]) -> Weights {
         Weights::from(input)
     }
-    pub fn shortest_path_length(weights: &Weights, dir: Dir) -> usize {
+    pub fn shortest_path_length1(weights: &Weights, dir: Dir) -> usize {
         let mut distances = Distances::default();
         distances.unvisited.push(Prospect {
             distance: 0,
@@ -167,7 +218,22 @@ impl Day17 {
             consecutive: 1,
         });
         loop {
-            if let Some(distance) = distances.iterate(weights) {
+            if let Some(distance) = distances.iterate1(weights) {
+                return distance;
+            }
+        }
+        unreachable!();
+    }
+    pub fn shortest_path_length2(weights: &Weights, dir: Dir) -> usize {
+        let mut distances = Distances::default();
+        distances.unvisited.push(Prospect {
+            distance: 0,
+            xy: (0, 0),
+            dir: Dir::E,
+            consecutive: 1,
+        });
+        loop {
+            if let Some(distance) = distances.iterate2(weights) {
                 return distance;
             }
         }
@@ -179,9 +245,10 @@ type Solution = usize;
 impl DaySolver<Solution> for Day17 {
     fn part1(input: Vec<String>) -> Option<Solution> {
         let weights = Self::parse(&input);
-        Some(Self::shortest_path_length(&weights, Dir::E))
+        Some(Self::shortest_path_length1(&weights, Dir::E))
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
-        None
+        let weights = Self::parse(&input);
+        Some(Self::shortest_path_length2(&weights, Dir::E))
     }
 }
