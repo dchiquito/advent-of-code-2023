@@ -94,11 +94,18 @@ impl Hash for Prospect {
     }
 }
 
-#[derive(Default)]
 pub struct Distances {
     // distance from origin, x, y, direction moved to get here, consecutive steps in that direction
     unvisited: BinaryHeap<Prospect>,
     visited: HashMap<Prospect, usize>,
+}
+impl Default for Distances {
+    fn default() -> Self {
+        Self {
+            unvisited: BinaryHeap::with_capacity(6000),
+            visited: HashMap::with_capacity(600_000),
+        }
+    }
 }
 impl Distances {
     pub fn iterate1(&mut self, weights: &Weights) -> Option<usize> {
