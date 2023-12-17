@@ -163,29 +163,51 @@ impl Distances {
             return None;
         }
         self.visited.insert(prospect.clone(), prospect.distance);
-        if prospect.consecutive >= 4 {
-            let (first_turn, second_turn) = prospect.dir.turns();
-            // First turn
-            let xy = first_turn.step(prospect.xy);
+        // if prospect.consecutive >= 4 {
+        let (first_turn, second_turn) = prospect.dir.turns();
+        // First turn
+        let mut new_distance = prospect.distance;
+        let mut xy = prospect.xy;
+        let mut success = true;
+        for _ in 0..4 {
+            xy = first_turn.step(xy);
             if let Some(weight) = weights.get(xy) {
-                self.unvisited.push(Prospect {
-                    distance: prospect.distance + weight,
-                    xy,
-                    dir: first_turn,
-                    consecutive: 1,
-                });
-            }
-            // Second turn
-            let xy = second_turn.step(prospect.xy);
-            if let Some(weight) = weights.get(xy) {
-                self.unvisited.push(Prospect {
-                    distance: prospect.distance + weight,
-                    xy,
-                    dir: second_turn,
-                    consecutive: 1,
-                });
+                new_distance += weight;
+            } else {
+                success = false;
+                break;
             }
         }
+        if success {
+            self.unvisited.push(Prospect {
+                distance: new_distance,
+                xy,
+                dir: first_turn,
+                consecutive: 4,
+            });
+        }
+        // Second turn
+        let mut new_distance = prospect.distance;
+        let mut xy = prospect.xy;
+        let mut success = true;
+        for _ in 0..4 {
+            xy = second_turn.step(xy);
+            if let Some(weight) = weights.get(xy) {
+                new_distance += weight;
+            } else {
+                success = false;
+                break;
+            }
+        }
+        if success {
+            self.unvisited.push(Prospect {
+                distance: new_distance,
+                xy,
+                dir: second_turn,
+                consecutive: 4,
+            });
+        }
+        // }
         // Straight ahead, if possible
         if prospect.consecutive < 10 {
             let xy = prospect.dir.step(prospect.xy);
