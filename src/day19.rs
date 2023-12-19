@@ -35,10 +35,10 @@ impl Workflow {
     pub fn eval(&self, xmas: &Xmas) -> &str {
         for (the_char, is_cmp_gt, cmp, workflow) in self.rules.iter() {
             let value = match the_char {
-                'x' => xmas.0,
-                'm' => xmas.1,
-                'a' => xmas.2,
-                's' => xmas.3,
+                'x' => xmas[0],
+                'm' => xmas[1],
+                'a' => xmas[2],
+                's' => xmas[3],
                 _ => unreachable!(),
             };
             if (*is_cmp_gt && value > *cmp) || ((!is_cmp_gt) && value < *cmp) {
@@ -50,7 +50,7 @@ impl Workflow {
 }
 
 pub type Workflows = HashMap<String, Workflow>;
-pub type Xmas = (u64, u64, u64, u64);
+pub type Xmas = [u64; 4];
 pub type Xmases = Vec<Xmas>;
 
 pub struct Day19();
@@ -68,7 +68,7 @@ impl Day19 {
                         let m = iter.next().unwrap()[2..].parse().unwrap();
                         let a = iter.next().unwrap()[2..].parse().unwrap();
                         let s = iter.next().unwrap()[2..].parse().unwrap();
-                        (x, m, a, s)
+                        [x, m, a, s]
                     })
                     .collect();
                 return (workflows, xmases);
@@ -96,7 +96,7 @@ impl DaySolver<Solution> for Day19 {
             xmases
                 .iter()
                 .filter(|xmas| Self::eval(&workflows, "in", xmas))
-                .map(|xmas| xmas.0 + xmas.1 + xmas.2 + xmas.3)
+                .map(|xmas| xmas.iter().sum::<u64>())
                 .sum(),
         )
     }
