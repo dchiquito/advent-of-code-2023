@@ -62,64 +62,10 @@ impl Day18 {
             })
             .collect()
     }
-    pub fn border(steps: &[Step]) -> HashSet<(i32, i32)> {
-        let mut x = 0;
-        let mut y = 0;
-        let mut visited = HashSet::new();
-        for step in steps.iter() {
-            let (dx, dy) = match step.dir {
-                Dir::U => (0, -1),
-                Dir::D => (0, 1),
-                Dir::L => (-1, 0),
-                Dir::R => (1, 0),
-            };
-            for _ in 0..step.distance {
-                x += dx;
-                y += dy;
-                visited.insert((x, y));
-            }
-        }
-        visited
-    }
-    pub fn area(mut steps: &mut Vec<Step>) -> usize {
-        let border = Self::border(steps);
-        // I know this is inside because I looked at it real good
-        let mut to_check = vec![(1, 0)];
-        let mut visited = HashSet::new();
-        while let Some((x, y)) = to_check.pop() {
-            visited.insert((x, y));
-            if !border.contains(&(x + 1, y))
-                && !visited.contains(&(x + 1, y))
-                && !to_check.contains(&(x + 1, y))
-            {
-                to_check.push((x + 1, y));
-            }
-            if !border.contains(&(x - 1, y))
-                && !visited.contains(&(x - 1, y))
-                && !to_check.contains(&(x - 1, y))
-            {
-                to_check.push((x - 1, y));
-            }
-            if !border.contains(&(x, y + 1))
-                && !visited.contains(&(x, y + 1))
-                && !to_check.contains(&(x, y + 1))
-            {
-                to_check.push((x, y + 1));
-            }
-            if !border.contains(&(x, y - 1))
-                && !visited.contains(&(x, y - 1))
-                && !to_check.contains(&(x, y - 1))
-            {
-                to_check.push((x, y - 1));
-            }
-        }
-        let x = visited.len() + border.len();
-        visited.len() + border.len()
-    }
-    pub fn area2(mut steps: &mut Vec<Step>) -> i64 {
+    pub fn area(steps: &[Step]) -> i64 {
         let mut x: i64 = 0;
         let mut area: i64 = 1;
-        for step in steps.iter() {
+        steps.iter().for_each(|step| {
             match step.dir {
                 Dir::U => {
                     area += step.distance as i64 * (x + 1);
@@ -135,7 +81,7 @@ impl Day18 {
                     x -= step.distance as i64;
                 }
             };
-        }
+        });
         area
     }
 }
@@ -144,10 +90,10 @@ type Solution = i64;
 impl DaySolver<Solution> for Day18 {
     fn part1(input: Vec<String>) -> Option<Solution> {
         let mut steps = Self::parse1(&input);
-        Some(Self::area2(&mut steps))
+        Some(Self::area(&steps))
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
         let mut steps = Self::parse2(&input);
-        Some(Self::area2(&mut steps))
+        Some(Self::area(&steps))
     }
 }
