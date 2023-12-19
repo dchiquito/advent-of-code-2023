@@ -1,26 +1,21 @@
 #![allow(unused)]
 use crate::util::DaySolver;
 
-type Solution = usize;
-
 pub struct Day21();
 
 impl Day21 {
-    fn parse(input: Vec<String>) -> usize {
+    pub fn parse(input: &[String]) -> usize {
         0
-    }
-
-    fn solve(input: Vec<String>) -> Option<Solution> {
-        let data = Self::parse(input);
-        None
     }
 }
 
+type Solution = usize;
 impl DaySolver<Solution> for Day21 {
     fn part1(input: Vec<String>) -> Option<Solution> {
-        Self::solve(input)
+        let data = Self::parse(&input);
+        None
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
-        Self::solve(input)
+        None
     }
 }
