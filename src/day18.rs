@@ -21,24 +21,6 @@ impl From<&str> for Dir {
         }
     }
 }
-impl Dir {
-    pub fn is_left(&self, other: &Dir) -> bool {
-        match *self {
-            Dir::U => other == &Dir::L,
-            Dir::R => other == &Dir::U,
-            Dir::D => other == &Dir::R,
-            Dir::L => other == &Dir::D,
-        }
-    }
-    pub fn is_right(&self, other: &Dir) -> bool {
-        match *self {
-            Dir::U => other == &Dir::R,
-            Dir::R => other == &Dir::D,
-            Dir::D => other == &Dir::L,
-            Dir::L => other == &Dir::U,
-        }
-    }
-}
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Step {
@@ -98,24 +80,6 @@ impl Day18 {
             }
         }
         visited
-    }
-    pub fn display(steps: &[Step]) {
-        let visited = Self::border(steps);
-        let min_x = visited.iter().min_by_key(|(x, y)| x).unwrap().0;
-        let max_x = visited.iter().max_by_key(|(x, y)| x).unwrap().0;
-        let min_y = visited.iter().min_by_key(|(x, y)| y).unwrap().1;
-        let max_y = visited.iter().max_by_key(|(x, y)| y).unwrap().1;
-        for y in min_y..=max_y {
-            for x in min_x..=max_x {
-                if visited.contains(&(x, y)) {
-                    print!("#");
-                } else {
-                    print!(" ")
-                }
-            }
-            println!();
-        }
-        println!("{min_x} {max_x} {min_y} {max_y} {}", visited.len());
     }
     pub fn area(mut steps: &mut Vec<Step>) -> usize {
         let border = Self::border(steps);
