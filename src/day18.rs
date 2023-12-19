@@ -3,6 +3,7 @@ use std::collections::HashSet;
 
 use crate::util::DaySolver;
 
+#[derive(Debug, Eq, PartialEq)]
 pub enum Dir {
     U,
     D,
@@ -20,16 +21,35 @@ impl From<&str> for Dir {
         }
     }
 }
+impl Dir {
+    pub fn is_left(&self, other: &Dir) -> bool {
+        match *self {
+            Dir::U => other == &Dir::L,
+            Dir::R => other == &Dir::U,
+            Dir::D => other == &Dir::R,
+            Dir::L => other == &Dir::D,
+        }
+    }
+    pub fn is_right(&self, other: &Dir) -> bool {
+        match *self {
+            Dir::U => other == &Dir::R,
+            Dir::R => other == &Dir::D,
+            Dir::D => other == &Dir::L,
+            Dir::L => other == &Dir::U,
+        }
+    }
+}
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct Step {
     dir: Dir,
-    distance: usize,
+    distance: u64,
 }
 
 pub struct Day18();
 
 impl Day18 {
-    pub fn parse(input: &[String]) -> Vec<Step> {
+    pub fn parse1(input: &[String]) -> Vec<Step> {
         input
             .iter()
             .map(|line| {
@@ -40,6 +60,23 @@ impl Day18 {
                     dir,
                     distance: *distance,
                 }
+            })
+            .collect()
+    }
+    pub fn parse2(input: &[String]) -> Vec<Step> {
+        input
+            .iter()
+            .map(|line| {
+                let dir = match &line[line.len() - 2..line.len() - 1].parse().unwrap() {
+                    0 => Dir::R,
+                    1 => Dir::D,
+                    2 => Dir::L,
+                    3 => Dir::U,
+                    _ => unreachable!(),
+                };
+                let distance =
+                    u64::from_str_radix(&line[line.len() - 7..line.len() - 2], 16).unwrap();
+                Step { dir, distance }
             })
             .collect()
     }
@@ -80,13 +117,8 @@ impl Day18 {
         }
         println!("{min_x} {max_x} {min_y} {max_y} {}", visited.len());
     }
-}
-
-type Solution = usize;
-impl DaySolver<Solution> for Day18 {
-    fn part1(input: Vec<String>) -> Option<Solution> {
-        let steps = Self::parse(&input);
-        let border = Self::border(&steps);
+    pub fn area(mut steps: &mut Vec<Step>) -> usize {
+        let border = Self::border(steps);
         // I know this is inside because I looked at it real good
         let mut to_check = vec![(1, 0)];
         let mut visited = HashSet::new();
@@ -117,9 +149,41 @@ impl DaySolver<Solution> for Day18 {
                 to_check.push((x, y - 1));
             }
         }
-        Some(visited.len() + border.len())
+        let x = visited.len() + border.len();
+        visited.len() + border.len()
+    }
+    pub fn area2(mut steps: &mut Vec<Step>) -> i64 {
+        let mut x: i64 = 0;
+        let mut area: i64 = 1;
+        for step in steps.iter() {
+            match step.dir {
+                Dir::U => {
+                    area += step.distance as i64 * (x + 1);
+                }
+                Dir::D => {
+                    area -= step.distance as i64 * x;
+                }
+                Dir::L => {
+                    x += step.distance as i64;
+                    area += step.distance as i64;
+                }
+                Dir::R => {
+                    x -= step.distance as i64;
+                }
+            };
+        }
+        area
+    }
+}
+
+type Solution = i64;
+impl DaySolver<Solution> for Day18 {
+    fn part1(input: Vec<String>) -> Option<Solution> {
+        let mut steps = Self::parse1(&input);
+        Some(Self::area2(&mut steps))
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
-        None
+        let mut steps = Self::parse2(&input);
+        Some(Self::area2(&mut steps))
     }
 }
