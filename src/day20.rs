@@ -1,45 +1,48 @@
 #![allow(unused)]
-use std::collections::{HashMap, VecDeque};
+use std::{
+    collections::{hash_map::DefaultHasher, HashMap, VecDeque},
+    hash::{Hash, Hasher},
+};
 
 use num::Integer;
 
 use crate::util::DaySolver;
 
-pub type Pulse = (String, String, bool);
+pub type Pulse = (u64, u64, bool);
 pub type Pulses = VecDeque<Pulse>;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Kind {
     Broadcaster,
     FlipFlop(bool),
-    Conjunction(HashMap<String, bool>),
+    Conjunction(HashMap<u64, bool>),
     Rx(bool),
 }
 
 #[derive(Debug)]
 pub struct Module {
-    id: String,
+    id: u64,
     kind: Kind,
-    outputs: Vec<String>,
+    outputs: Vec<u64>,
 }
 
 impl From<&String> for Module {
     fn from(value: &String) -> Self {
         let (id, outputs) = value.split_once(" -> ").unwrap();
-        let outputs = outputs.split(", ").map(|o| o.to_string()).collect();
+        let outputs = outputs.split(", ").map(Day20::hash).collect();
         match id.chars().next().unwrap() {
             'b' => Module {
-                id: "broadcaster".to_string(),
+                id: Day20::hash("broadcaster"),
                 kind: Kind::Broadcaster,
                 outputs,
             },
             '%' => Module {
-                id: id[1..].to_string(),
+                id: Day20::hash(&id[1..]),
                 kind: Kind::FlipFlop(false),
                 outputs,
             },
             '&' => Module {
-                id: id[1..].to_string(),
+                id: Day20::hash(&id[1..]),
                 kind: Kind::Conjunction(HashMap::new()),
                 outputs,
             },
@@ -52,9 +55,9 @@ impl Module {
     fn send(&self, pulses: &mut Pulses, value: bool) {
         self.outputs
             .iter()
-            .for_each(|output| pulses.push_back((self.id.to_string(), output.to_string(), value)));
+            .for_each(|output| pulses.push_back((self.id, *output, value)));
     }
-    pub fn pulse(&mut self, pulses: &mut Pulses, from: &str, value: bool) {
+    pub fn pulse(&mut self, pulses: &mut Pulses, from: &u64, value: bool) {
         match &mut self.kind {
             Kind::Broadcaster => self.send(pulses, value),
             Kind::FlipFlop(state) => {
@@ -65,7 +68,7 @@ impl Module {
                 }
             }
             Kind::Conjunction(inputs) => {
-                inputs.insert(from.to_string(), value);
+                inputs.insert(*from, value);
                 let all_high = inputs.values().all(|b| *b);
                 self.send(pulses, !all_high);
             }
@@ -78,66 +81,68 @@ impl Module {
     }
 }
 
-pub type Modules = HashMap<String, Module>;
+pub type Modules = HashMap<u64, Module>;
 
 pub struct Day20();
 
 impl Day20 {
+    fn hash(s: &str) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        s.hash(&mut hasher);
+        hasher.finish()
+    }
     pub fn parse1(input: &[String]) -> Modules {
-        let mut modules: Modules = input
-            .iter()
-            .map(Module::from)
-            .map(|m| (m.id.clone(), m))
-            .collect();
+        let mut modules: Modules = input.iter().map(Module::from).map(|m| (m.id, m)).collect();
         // Manually inject the rx module
         modules.insert(
-            "rx".to_string(),
+            Self::hash("rx"),
             Module {
-                id: "rx".to_string(),
+                id: Self::hash("rx"),
                 kind: Kind::Rx(false),
                 outputs: vec![],
             },
         );
-        let output_map: Vec<(String, Vec<String>)> = modules
+        let output_map: Vec<(u64, Vec<u64>)> = modules
             .iter()
-            .map(|(id, module)| (id.clone(), module.outputs.clone()))
+            .map(|(id, module)| (*id, module.outputs.clone()))
             .collect();
         output_map.iter().for_each(|(id, outputs)| {
             outputs.iter().for_each(|output| {
                 if let Some(module) = modules.get_mut(output) {
                     if let Kind::Conjunction(inputs) = &mut module.kind {
-                        inputs.insert(id.clone(), false);
+                        inputs.insert(*id, false);
                     }
                 }
             })
         });
         modules
     }
-    pub fn parse2(input: &[String], without: &[&str]) -> Modules {
+    pub fn parse2(input: &[String], without: &[u64]) -> Modules {
         let mut modules: Modules = input
             .iter()
-            .filter(|line| without.iter().all(|w| !line.starts_with(&format!("&{w}"))))
+            // .filter(|line| without.iter().all(|w| !line.starts_with(&format!("&{w}"))))
             .map(Module::from)
-            .map(|m| (m.id.clone(), m))
+            .filter(|m| !without.contains(&m.id))
+            .map(|m| (m.id, m))
             .collect();
         // Manually inject the rx module
         modules.insert(
-            "rx".to_string(),
+            Day20::hash("rx"),
             Module {
-                id: "rx".to_string(),
+                id: Day20::hash("rx"),
                 kind: Kind::Rx(false),
                 outputs: vec![],
             },
         );
-        let output_map: Vec<(String, Vec<String>)> = modules
+        let output_map: Vec<(u64, Vec<u64>)> = modules
             .iter()
-            .map(|(id, module)| (id.clone(), module.outputs.clone()))
+            .map(|(id, module)| (*id, module.outputs.clone()))
             .collect();
         output_map.iter().for_each(|(id, outputs)| {
             outputs.iter().for_each(|output| {
                 if let Some(module) = modules.get_mut(output) {
                     if let Kind::Conjunction(inputs) = &mut module.kind {
-                        inputs.insert(id.clone(), false);
+                        inputs.insert(*id, false);
                     }
                 }
             })
@@ -148,7 +153,7 @@ impl Day20 {
         let mut lows = 0;
         let mut highs = 0;
         let mut pulses: VecDeque<Pulse> =
-            VecDeque::from([("button".to_string(), "broadcaster".to_string(), false)]);
+            VecDeque::from([(Self::hash("button"), Self::hash("broadcaster"), false)]);
         while let Some(pulse) = pulses.pop_front() {
             if pulse.2 {
                 highs += 1;
@@ -193,19 +198,19 @@ impl DaySolver<Solution> for Day20 {
         let mut modules = Self::parse1(&input);
         let hub = modules
             .values()
-            .find(|module| module.outputs.iter().any(|o| o == "rx"))
+            .find(|module| module.outputs.iter().any(|o| *o == Self::hash("rx")))
             .unwrap();
         if let Kind::Conjunction(inputs) = &hub.kind {
             let mut lcm = 1;
             for chokepoint in inputs.keys() {
-                let without: Vec<&str> = inputs
+                let without: Vec<u64> = inputs
                     .keys()
                     .filter(|s| s != &chokepoint)
-                    .map(|s| s as &str)
+                    .copied()
                     .collect();
                 let mut modified_modules = Self::parse2(&input, &without);
                 let mut count = 0;
-                while modified_modules.get("rx").unwrap().kind == Kind::Rx(false) {
+                while modified_modules.get(&Self::hash("rx")).unwrap().kind == Kind::Rx(false) {
                     Self::count_pulses(&mut modified_modules);
                     count += 1;
                 }
