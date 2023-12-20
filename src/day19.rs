@@ -98,16 +98,6 @@ impl Day19 {
                 (w.id.to_string(), w)
             })
             .collect()
-        // let mut workflows = Workflows::default();
-        // for (i, line) in input.iter().enumerate() {
-        //     if line.is_empty() {
-        //         return workflows;
-        //     } else {
-        //         let workflow = Workflow::from(line);
-        //         workflows.insert(workflow.id.clone(), workflow);
-        //     }
-        // }
-        // unreachable!()
     }
     pub fn eval(workflows: &Workflows, id: &str, xmas: &Xmas) -> bool {
         let mut id = id;
