@@ -152,10 +152,9 @@ impl Day19 {
                     // First, recursively figure out the area of the higher range, since it
                     // applies.
                     // x > 12 means x=(13,14)=[13..15) means low=cmp+1, high=high
-                    let tmp_low = low[*index];
-                    low[*index] = *cmp + 1;
-                    sum += Self::range_count(workflows, next, &low, &high);
-                    low[*index] = tmp_low;
+                    let mut new_low = low;
+                    new_low[*index] = *cmp + 1;
+                    sum += Self::range_count(workflows, next, &new_low, &high);
                     // Now adjust the range to the lower one, x=(10,11,12)=[10..13) means
                     // low=low,high=cmp+1
                     high[*index] = *cmp + 1;
@@ -168,10 +167,9 @@ impl Day19 {
                 // [low..cmp) applies to this rule
                 // [cmp..high) needs to be checked against subsequent rules
                 if high[*index] > *cmp {
-                    let tmp_high = high[*index];
-                    high[*index] = *cmp;
-                    sum += Self::range_count(workflows, next, &low, &high);
-                    high[*index] = tmp_high;
+                    let mut new_high = high;
+                    new_high[*index] = *cmp;
+                    sum += Self::range_count(workflows, next, &low, &new_high);
                     low[*index] = *cmp;
                 // low <= x < high <= cmp, meaning the whole range matches the condition
                 // It's impossible to continue, so just return
@@ -201,18 +199,3 @@ impl DaySolver<Solution> for Day19 {
         Some(Self::range_count(&workflows, "in", &[1; 4], &[4001; 4]))
     }
 }
-
-/*
-
-in{s<1351:px,qqz}
- px{a<2006:qkq,m>2090:A,rfg}
-  qkq{x<1416:A,crn}
-   crn{x>2662:A,R}
-  rfg{s<537:gd,x>2440:R,A}
-   gd{a>3333:R,R}
- qqz{s>2770:qs,m<1801:hdj,R}
-  qs{s>3448:A,lnx}
-   lnx{m>1548:A,A}
-  hdj{m>838:A,pv}
-   pv{a>1716:R,A}
-*/
