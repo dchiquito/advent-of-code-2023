@@ -56,28 +56,58 @@ pub type Xmases = Vec<Xmas>;
 pub struct Day19();
 
 impl Day19 {
-    pub fn parse(input: &[String]) -> (Workflows, Xmases) {
-        let mut workflows = Workflows::default();
-        for (i, line) in input.iter().enumerate() {
-            if line.is_empty() {
-                let xmases = input[i + 1..]
-                    .iter()
-                    .map(|line2| {
-                        let mut iter = line2[1..line2.len() - 1].split(',');
-                        let x = iter.next().unwrap()[2..].parse().unwrap();
-                        let m = iter.next().unwrap()[2..].parse().unwrap();
-                        let a = iter.next().unwrap()[2..].parse().unwrap();
-                        let s = iter.next().unwrap()[2..].parse().unwrap();
-                        [x, m, a, s]
-                    })
-                    .collect();
-                return (workflows, xmases);
-            } else {
-                let workflow = Workflow::from(line);
-                workflows.insert(workflow.id.clone(), workflow);
-            }
-        }
-        unreachable!()
+    pub fn parse1(input: &[String]) -> (Workflows, Xmases) {
+        let split = input
+            .iter()
+            .enumerate()
+            .find(|(_, line)| line.is_empty())
+            .unwrap()
+            .0;
+        let workflows = input[0..split]
+            .iter()
+            .map(|line| {
+                let w = Workflow::from(line);
+                (w.id.to_string(), w)
+            })
+            .collect();
+        let xmases = input[split + 1..]
+            .iter()
+            .map(|line2| {
+                let mut iter = line2[1..line2.len() - 1].split(',');
+                let x = iter.next().unwrap()[2..].parse().unwrap();
+                let m = iter.next().unwrap()[2..].parse().unwrap();
+                let a = iter.next().unwrap()[2..].parse().unwrap();
+                let s = iter.next().unwrap()[2..].parse().unwrap();
+                [x, m, a, s]
+            })
+            .collect();
+        (workflows, xmases)
+    }
+    pub fn parse2(input: &[String]) -> Workflows {
+        let split = input
+            .iter()
+            .enumerate()
+            .find(|(_, line)| line.is_empty())
+            .unwrap()
+            .0;
+        input
+            .iter()
+            .take(split)
+            .map(|line| {
+                let w = Workflow::from(line);
+                (w.id.to_string(), w)
+            })
+            .collect()
+        // let mut workflows = Workflows::default();
+        // for (i, line) in input.iter().enumerate() {
+        //     if line.is_empty() {
+        //         return workflows;
+        //     } else {
+        //         let workflow = Workflow::from(line);
+        //         workflows.insert(workflow.id.clone(), workflow);
+        //     }
+        // }
+        // unreachable!()
     }
     pub fn eval(workflows: &Workflows, id: &str, xmas: &Xmas) -> bool {
         let mut id = id;
@@ -157,7 +187,7 @@ impl Day19 {
 type Solution = u64;
 impl DaySolver<Solution> for Day19 {
     fn part1(input: Vec<String>) -> Option<Solution> {
-        let (workflows, xmases) = Self::parse(&input);
+        let (workflows, xmases) = Self::parse1(&input);
         Some(
             xmases
                 .iter()
@@ -167,7 +197,7 @@ impl DaySolver<Solution> for Day19 {
         )
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
-        let (workflows, _) = Self::parse(&input);
+        let workflows = Self::parse2(&input);
         Some(Self::range_count(&workflows, "in", &[1; 4], &[4001; 4]))
     }
 }

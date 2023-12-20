@@ -227,11 +227,14 @@ pub fn all_benchmarks(c: &mut Criterion) {
     // Day 19
     let input1 = get_input(19);
     let input2 = input1.clone();
-    c.bench_function("day 19 parse", |b| {
-        b.iter_batched(|| &input1, Day19::parse, BatchSize::SmallInput)
+    c.bench_function("day 19 parse 1", |b| {
+        b.iter_batched(|| &input1, Day19::parse1, BatchSize::SmallInput)
     });
     c.bench_function("day 19 part 1", move |b| {
         b.iter_batched(|| input1.clone(), Day19::part1, BatchSize::SmallInput)
+    });
+    c.bench_function("day 19 parse 2", |b| {
+        b.iter_batched(|| &input2, Day19::parse2, BatchSize::SmallInput)
     });
     c.bench_function("day 19 part 2", move |b| {
         b.iter_batched(|| input2.clone(), Day19::part2, BatchSize::SmallInput)
