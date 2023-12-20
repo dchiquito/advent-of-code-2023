@@ -6,7 +6,7 @@ use crate::util::DaySolver;
 #[derive(Debug)]
 pub struct Workflow {
     id: String,
-    rules: Vec<(char, bool, u64, String)>,
+    rules: Vec<(usize, bool, u64, String)>,
     fallback: String,
 }
 impl From<&String> for Workflow {
@@ -17,10 +17,16 @@ impl From<&String> for Workflow {
         let rules = rules_vec[..rules_vec.len() - 1]
             .iter()
             .map(|rule| {
-                let xmas = rule.chars().next().unwrap();
+                let index = match rule.chars().next().unwrap() {
+                    'x' => 0,
+                    'm' => 1,
+                    'a' => 2,
+                    's' => 3,
+                    _ => unreachable!(),
+                };
                 let gt = rule.chars().nth(1).unwrap() == '>';
                 let (cmp, next) = rule[2..].split_once(':').unwrap();
-                (xmas, gt, cmp.parse().unwrap(), next.to_string())
+                (index, gt, cmp.parse().unwrap(), next.to_string())
             })
             .collect();
         let fallback = rules_vec.last().unwrap().to_string();
@@ -33,14 +39,8 @@ impl From<&String> for Workflow {
 }
 impl Workflow {
     pub fn eval(&self, xmas: &Xmas) -> &str {
-        for (the_char, is_cmp_gt, cmp, workflow) in self.rules.iter() {
-            let value = match the_char {
-                'x' => xmas[0],
-                'm' => xmas[1],
-                'a' => xmas[2],
-                's' => xmas[3],
-                _ => unreachable!(),
-            };
+        for (index, is_cmp_gt, cmp, workflow) in self.rules.iter() {
+            let value = xmas[*index];
             if (*is_cmp_gt && value > *cmp) || ((!is_cmp_gt) && value < *cmp) {
                 return workflow;
             }
@@ -79,12 +79,81 @@ impl Day19 {
         }
         unreachable!()
     }
-    pub fn eval(workflows: &Workflows, workflow: &str, xmas: &Xmas) -> bool {
-        let mut workflow = workflow;
-        while workflow != "A" && workflow != "R" {
-            workflow = workflows.get(workflow).unwrap().eval(xmas);
+    pub fn eval(workflows: &Workflows, id: &str, xmas: &Xmas) -> bool {
+        let mut id = id;
+        while id != "A" && id != "R" {
+            id = workflows.get(id).unwrap().eval(xmas);
         }
-        workflow == "A"
+        id == "A"
+    }
+    pub fn range_count(workflows: &Workflows, id: &str, low: &Xmas, high: &Xmas) -> u64 {
+        if id == "R" {
+            return 0;
+        }
+        if id == "A" {
+            // Get the dimensions of the range and multiply them together
+            let area = low
+                .iter()
+                .zip(high.iter())
+                .map(|(l, h)| h - l)
+                .reduce(|a, b| a * b)
+                .unwrap();
+            println!("\tIncrementing {low:?}..{high:?} = {area}");
+            return area;
+        }
+        let mut low = *low;
+        let mut high = *high;
+        let workflow = workflows.get(id).unwrap();
+        let mut sum = 0;
+        // We have a range [low..high) for each XMAS index
+        // Assume arbitrary values in these ranges are "x", where low <= x < high
+        for (index, is_cmp_gt, cmp, next) in workflow.rules.iter() {
+            println!(
+                "{id}:\tChecking range {low:?}..{high:?}:  ({index}) x {} {cmp} for {} <= x < {} => {next}",
+                if *is_cmp_gt { '>' } else { '<' },
+                low[*index],
+                high[*index]
+            );
+            // if x > cmp for some low<=x<high, the rule applies
+            // If the high is less than or equal to cmp, then the rule never applies
+            // Only proceed if high > cmp
+            if *is_cmp_gt && high[*index] > *cmp {
+                // If low <= cmp, then low <= cmp < high, meaning we need to split the range
+                // [low..cmp+1) needs to be checked against subsequent rules
+                // [cmp+1..high) applies to this rule
+                if low[*index] <= *cmp {
+                    let tmp_low = low[*index];
+                    low[*index] = *cmp + 1;
+                    sum += Self::range_count(workflows, next, &low, &high);
+                    low[*index] = tmp_low;
+                    high[*index] = *cmp + 1;
+                // cmp < low <= x < high, meaning the whole range matches the condition
+                // It's impossible to continue, so just return
+                } else {
+                    return sum + Self::range_count(workflows, next, &low, &high);
+                }
+            // if x < cmp for some low<=x<high, the rule applies
+            // If the low is higher than cmp, then the rule never applies
+            // Only proceed if low < cmp
+            } else if (!is_cmp_gt) && low[*index] < *cmp {
+                // If high > cmp, then low < cmp < high, meaning we need to split the range
+                // [low..cmp) applies to this rule
+                // [cmp..high) needs to be checked against subsequent rules
+                if high[*index] > *cmp {
+                    let tmp_high = high[*index];
+                    high[*index] = *cmp;
+                    sum += Self::range_count(workflows, next, &low, &high);
+                    high[*index] = tmp_high;
+                    low[*index] = *cmp;
+                // low <= x < high <= cmp, meaning the whole range matches the condition
+                // It's impossible to continue, so just return
+                } else {
+                    return sum + Self::range_count(workflows, next, &low, &high);
+                }
+            }
+        }
+        println!("\tFalling back to {}", workflow.fallback);
+        sum + Self::range_count(workflows, &workflow.fallback, &low, &high)
     }
 }
 
@@ -102,6 +171,6 @@ impl DaySolver<Solution> for Day19 {
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
         let (workflows, _) = Self::parse(&input);
-        None
+        Some(Self::range_count(&workflows, "in", &[0; 4], &[4001; 4]))
     }
 }
