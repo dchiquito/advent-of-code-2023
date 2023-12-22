@@ -64,7 +64,8 @@ impl HeightMap {
                     }
                     Ordering::Greater => {
                         max = height;
-                        supported_by = HashSet::from([maybe_index.unwrap()]);
+                        supported_by.clear();
+                        supported_by.insert(maybe_index.unwrap());
                     }
                     Ordering::Less => continue,
                 }
@@ -74,17 +75,18 @@ impl HeightMap {
     }
     pub fn settle(&mut self, bricks: &mut [Brick]) {
         for i in 0..bricks.len() {
-            let brick = &mut bricks[i];
-            let (height, supported_by) = self.get_max_height_under(brick);
-            brick.z2 = height + 1 + brick.z2 - brick.z1;
-            brick.z1 = height + 1;
-            brick.supported_by = supported_by.clone();
-            for x in brick.x1..=brick.x2 {
-                for y in brick.y1..=brick.y2 {
-                    self.heights[y][x] = (brick.z2, Some(i))
+            {
+                let brick = &mut bricks[i];
+                let (height, supported_by) = self.get_max_height_under(brick);
+                let new_height = height + 1 + brick.z2 - brick.z1;
+                brick.supported_by = supported_by;
+                for x in brick.x1..=brick.x2 {
+                    for y in brick.y1..=brick.y2 {
+                        self.heights[y][x] = (new_height, Some(i))
+                    }
                 }
             }
-            for support in supported_by.iter() {
+            for support in bricks[i].supported_by.iter() {
                 bricks[*support].supports.insert(i);
             }
         }
