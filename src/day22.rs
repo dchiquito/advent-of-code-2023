@@ -1,7 +1,10 @@
 #![allow(unused)]
 use crate::util::DaySolver;
 
-use std::{cmp::Ordering, collections::HashSet};
+use std::{
+    cmp::Ordering,
+    collections::{HashMap, HashSet},
+};
 
 #[derive(Debug)]
 pub struct Brick {
@@ -127,6 +130,28 @@ impl DaySolver<Solution> for Day22 {
         let mut bricks = Self::parse(&input);
         let mut heights = HeightMap::new();
         heights.settle(&mut bricks);
-        None
+        let mut sum = 0;
+        for i in 0..bricks.len() {
+            let mut knockouts = vec![i];
+            let mut j = 0;
+            while j < knockouts.len() {
+                for b in bricks[knockouts[j]].supports.iter() {
+                    if knockouts.contains(b) {
+                        continue;
+                    }
+                    let might_knockout = &bricks[*b];
+                    if might_knockout
+                        .supported_by
+                        .iter()
+                        .all(|sb| knockouts.contains(sb))
+                    {
+                        knockouts.push(*b);
+                    }
+                }
+                j += 1;
+            }
+            sum += knockouts.len() - 1; // don't count the original brick
+        }
+        Some(sum)
     }
 }
