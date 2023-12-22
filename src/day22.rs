@@ -136,20 +136,21 @@ impl DaySolver<Solution> for Day22 {
             let mut j = 0;
             while j < knockouts.len() {
                 for b in bricks[knockouts[j]].supports.iter() {
-                    if knockouts.contains(b) {
+                    if knockouts.iter().rev().any(|k| k == b) {
                         continue;
                     }
                     let might_knockout = &bricks[*b];
                     if might_knockout
                         .supported_by
                         .iter()
-                        .all(|sb| knockouts.contains(sb))
+                        .all(|sb| knockouts.iter().rev().any(|k| k == sb))
                     {
                         knockouts.push(*b);
                     }
                 }
                 j += 1;
             }
+            // println!("{knockouts:?}");
             sum += knockouts.len() - 1; // don't count the original brick
         }
         Some(sum)
