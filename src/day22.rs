@@ -135,19 +135,21 @@ impl DaySolver<Solution> for Day22 {
         let mut sum = 0;
         for i in 0..bricks.len() {
             let mut knockouts = vec![i];
+            let mut knockouts_set = HashSet::from([i]);
             let mut j = 0;
             while j < knockouts.len() {
                 for b in bricks[knockouts[j]].supports.iter() {
-                    if knockouts.iter().rev().any(|k| k == b) {
+                    if knockouts_set.contains(b) {
                         continue;
                     }
                     let might_knockout = &bricks[*b];
                     if might_knockout
                         .supported_by
                         .iter()
-                        .all(|sb| knockouts.iter().rev().any(|k| k == sb))
+                        .all(|sb| knockouts_set.contains(sb))
                     {
                         knockouts.push(*b);
+                        knockouts_set.insert(*b);
                     }
                 }
                 j += 1;
