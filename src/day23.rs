@@ -100,7 +100,6 @@ impl Day23 {
         graph.insert((1, 0), vec![edge]);
         nodes_to_check.push(edge.1);
         while let Some((x, y)) = nodes_to_check.pop() {
-            println!("Checkin out ({x},{y}) {nodes_to_check:?}");
             if (x, y) == trail.finish {
                 continue;
             }
@@ -142,13 +141,12 @@ impl Day23 {
         graph: &Graph,
         pos: (usize, usize),
         mut visited: &mut Vec<(usize, usize)>,
-    ) -> Vec<i32> {
+    ) -> i32 {
         if pos == trail.finish {
-            // println!("The end {visited:?}");
-            return vec![];
+            return 0;
         }
         if pos == trail.finish || visited.contains(&pos) {
-            return vec![-99999];
+            return -99999;
         }
         visited.push(pos);
         let distance = graph
@@ -156,21 +154,15 @@ impl Day23 {
             .unwrap()
             .iter()
             .map(|(distance, adj)| {
-                [*distance as i32]
-                    .iter()
-                    .chain(Self::longest_path_in_graph_given(trail, graph, *adj, visited).iter())
-                    .copied()
-                    .collect::<Vec<i32>>()
+                (*distance as i32) + Self::longest_path_in_graph_given(trail, graph, *adj, visited)
             })
-            .max_by_key(|ds| ds.iter().sum::<i32>())
+            .max()
             .unwrap();
         visited.pop();
         distance
     }
     pub fn longest_path_in_graph(trail: &Trail, graph: &Graph) -> usize {
-        let ds = Self::longest_path_in_graph_given(trail, graph, trail.start, &mut vec![]);
-        println!("{ds:?}");
-        ds.iter().sum::<i32>() as usize + 1
+        Self::longest_path_in_graph_given(trail, graph, trail.start, &mut vec![]) as usize + 1
     }
 }
 
@@ -183,9 +175,6 @@ impl DaySolver<Solution> for Day23 {
     fn part2(input: Vec<String>) -> Option<Solution> {
         let trail = Self::parse(&input);
         let graph = Self::build_graph(&trail);
-        for (k, v) in graph.iter() {
-            println!("{k:?}: {v:?}");
-        }
         Some(Self::longest_path_in_graph(&trail, &graph))
     }
 }
