@@ -141,12 +141,12 @@ impl Day23 {
         graph: &Graph,
         pos: (usize, usize),
         mut visited: &mut Vec<(usize, usize)>,
-    ) -> i32 {
+    ) -> Option<usize> {
         if pos == trail.finish {
-            return 0;
+            return Some(0);
         }
         if pos == trail.finish || visited.contains(&pos) {
-            return -99999;
+            return None;
         }
         visited.push(pos);
         let distance = graph
@@ -154,15 +154,18 @@ impl Day23 {
             .unwrap()
             .iter()
             .map(|(distance, adj)| {
-                (*distance as i32) + Self::longest_path_in_graph_given(trail, graph, *adj, visited)
+                (
+                    distance,
+                    Self::longest_path_in_graph_given(trail, graph, *adj, visited),
+                )
             })
-            .max()
-            .unwrap();
+            .filter_map(|(d, path)| path.map(|p| d + p))
+            .max();
         visited.pop();
         distance
     }
     pub fn longest_path_in_graph(trail: &Trail, graph: &Graph) -> usize {
-        Self::longest_path_in_graph_given(trail, graph, trail.start, &mut vec![]) as usize + 1
+        Self::longest_path_in_graph_given(trail, graph, trail.start, &mut vec![]).unwrap() + 1
     }
 }
 
