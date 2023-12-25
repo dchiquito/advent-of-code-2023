@@ -20,11 +20,10 @@ impl Graph {
     pub fn find_path(&self, start: u64, end: u64, excluding: &[Edge]) -> Result<Vec<Edge>, usize> {
         let mut to_visit: VecDeque<u64> = VecDeque::from([start]);
         let mut to_visit_set: HashSet<u64> = HashSet::new();
-        let mut visited = HashSet::new();
+        // let mut visited = HashSet::new();
         // For a given node, record the previous node in the path so we can reconstruct the path
         let mut path_links: HashMap<u64, u64> = HashMap::new();
         while let Some(node) = to_visit.pop_front() {
-            visited.insert(node);
             for adj in self.nodes.get(&node).unwrap() {
                 if *adj == end {
                     let mut path = vec![];
@@ -36,10 +35,7 @@ impl Graph {
                     }
                     return Ok(path);
                 }
-                if visited.contains(adj)
-                    || is_edge_in(excluding, &(node, *adj))
-                    || to_visit_set.contains(adj)
-                {
+                if to_visit_set.contains(adj) || is_edge_in(excluding, &(node, *adj)) {
                     continue;
                 }
                 to_visit.push_back(*adj);
@@ -47,7 +43,7 @@ impl Graph {
                 path_links.insert(*adj, node);
             }
         }
-        Err(visited.len())
+        Err(to_visit_set.len())
     }
 }
 
