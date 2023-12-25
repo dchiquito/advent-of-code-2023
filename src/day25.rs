@@ -19,7 +19,7 @@ impl Graph {
     }
     pub fn find_path(&self, start: u64, end: u64, excluding: &[Edge]) -> Result<Vec<Edge>, usize> {
         let mut to_visit: VecDeque<u64> = VecDeque::from([start]);
-        // let mut to_visit_set: HashSet<u64> = HashSet::new();
+        let mut to_visit_set: HashSet<u64> = HashSet::new();
         let mut visited = HashSet::new();
         // For a given node, record the previous node in the path so we can reconstruct the path
         let mut path_links: HashMap<u64, u64> = HashMap::new();
@@ -38,12 +38,12 @@ impl Graph {
                 }
                 if visited.contains(adj)
                     || is_edge_in(excluding, &(node, *adj))
-                    || to_visit.contains(adj)
+                    || to_visit_set.contains(adj)
                 {
                     continue;
                 }
                 to_visit.push_back(*adj);
-                // to_visit_set.insert(*adj);
+                to_visit_set.insert(*adj);
                 path_links.insert(*adj, node);
             }
         }
@@ -114,7 +114,7 @@ impl DaySolver<Solution> for Day25 {
                     }
                 }
             } else {
-                println!("Failed :(");
+                // println!("Failed :(");
             }
         }
         unreachable!();
