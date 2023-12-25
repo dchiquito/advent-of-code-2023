@@ -17,7 +17,12 @@ impl Graph {
         s.hash(&mut hasher);
         hasher.finish()
     }
-    pub fn find_path(&self, start: u64, end: u64, excluding: &[Edge]) -> Result<Vec<Edge>, usize> {
+    pub fn find_path(
+        &self,
+        start: u64,
+        ends: &[u64],
+        excluding: &[Edge],
+    ) -> Result<Vec<Edge>, usize> {
         let mut to_visit: VecDeque<u64> = VecDeque::from([start]);
         let mut to_visit_set: HashSet<u64> = HashSet::new();
         // let mut visited = HashSet::new();
@@ -25,7 +30,10 @@ impl Graph {
         let mut path_links: HashMap<u64, u64> = HashMap::new();
         while let Some(node) = to_visit.pop_front() {
             for adj in self.nodes.get(&node).unwrap() {
-                if *adj == end {
+                if to_visit_set.contains(adj) || is_edge_in(excluding, &(node, *adj)) {
+                    continue;
+                }
+                if ends.contains(adj) {
                     let mut path = vec![];
                     let mut node = node;
                     while node != start {
@@ -34,9 +42,6 @@ impl Graph {
                         node = next_node;
                     }
                     return Ok(path);
-                }
-                if to_visit_set.contains(adj) || is_edge_in(excluding, &(node, *adj)) {
-                    continue;
                 }
                 to_visit.push_back(*adj);
                 to_visit_set.insert(*adj);
@@ -89,21 +94,23 @@ impl DaySolver<Solution> for Day25 {
             let end = graph.keys[i];
             let mut paths = vec![];
             // Find the shortest path to the end
-            let path1 = graph.find_path(start, end, &paths).unwrap();
+            let path1 = graph.find_path(start, &[end], &paths).unwrap();
             paths.append(&mut path1.clone());
             // Find the shortest path to the end, but avoiding all the edges in the last path
-            let path2 = graph.find_path(start, end, &paths).unwrap();
+            let path2 = graph.find_path(start, &[end], &paths).unwrap();
             paths.append(&mut path2.clone());
             // Find the shortest path to the end, but avoiding all the edges in the last two paths
-            let path3 = graph.find_path(start, end, &paths).unwrap();
+            let path3 = graph.find_path(start, &[end], &paths).unwrap();
             paths.append(&mut path3.clone());
             // If there is no longer a path to the end, each of our three paths contains one of the
             // crucial bridging edges we must remove.
-            if graph.find_path(start, end, &paths).is_err() {
+            if graph.find_path(start, &[end], &paths).is_err() {
                 for e1 in path1.iter() {
                     for e2 in path2.iter() {
                         for e3 in path3.iter() {
-                            if let Err(size) = graph.find_path(start, end, &[*e1, *e2, *e3]) {
+                            if let Err(size) =
+                                graph.find_path(start, &[end, e1.0, e2.0, e3.0], &[*e1, *e2, *e3])
+                            {
                                 return Some((graph.nodes.len() - size) * size);
                             }
                         }
