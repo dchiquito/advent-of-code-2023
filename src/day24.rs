@@ -4,7 +4,7 @@ use crate::util::DaySolver;
 use num::{BigInt, BigRational, Integer, Zero};
 use std::str::FromStr;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Hail {
     x: BigInt,
     y: BigInt,
@@ -89,39 +89,75 @@ impl Day24 {
 }
 
 impl Day24 {
-    fn valid_vs(hails: &[Hail], index: usize) -> Vec<i64> {
-        (-1999_i64..1999_i64)
-            // (-499_i64..499_i64)
-            // let valid_vx: Vec<i64> = (-350_i64..300_i64)
-            .filter(|v| {
-                let mut min = BigInt::zero();
-                let mut max = BigInt::from(i64::MAX);
-                for hail in hails.iter() {
-                    let v = BigInt::from(*v);
-                    if &v == hail.v(index) {
-                        // then v = hail.v
-                        min = min.max(hail.p(index).clone());
-                        max = max.min(hail.p(index).clone());
-                    } else if hail.v(index) > &v {
-                        min = min.max(hail.p(index).clone());
-                    } else {
-                        max = max.min(hail.p(index).clone());
-                    }
-                    if max < min {
-                        break;
-                    }
-                }
-                // println!("{v} [{}..{}]\t{} things to check", &min, &max, &max - &min);
-                max > min
-            })
-            .collect()
+    fn find_x(vx: &BigInt, vy: &BigInt, a: &Hail, b: &Hail) -> Option<BigInt> {
+        let xa = &a.x;
+        let xb = &b.x;
+        let ya = &a.y;
+        let yb = &b.y;
+        let cxa = &(&a.vx - vx);
+        let cxb = &(&b.vx - vx);
+        let cya = &(&a.vy - vy);
+        let cyb = &(&b.vy - vy);
+        let numerator = ((yb - ya) * cxa * cxb) + (xa * cya * cxb) - (xb * cyb * cxa);
+        let denominator = (cya * cxb) - (cyb * cxa);
+        if (!denominator.is_zero()) && numerator.is_multiple_of(&denominator) {
+            Some(numerator / denominator)
+        } else {
+            None
+        }
+    }
+    fn find_t(x: &BigInt, vx: &BigInt, h: &Hail) -> Option<BigInt> {
+        let numerator = x - &h.x;
+        let denominator = &h.vx - vx;
+        // Time must be a positive integer
+        if (!denominator.is_zero())
+            && numerator.sign() == denominator.sign()
+            && numerator.is_multiple_of(&denominator)
+        {
+            Some(numerator / denominator)
+        } else {
+            None
+        }
+    }
+    fn solve(vx: &BigInt, vy: &BigInt, vz: &BigInt, h: &Hail, t: &BigInt) -> Hail {
+        let x = &h.x + (&h.vx * t) - (vx * t);
+        let y = &h.y + (&h.vy * t) - (vy * t);
+        let z = &h.z + (&h.vz * t) - (vz * t);
+        Hail {
+            x,
+            y,
+            z,
+            vx: vx.clone(),
+            vy: vy.clone(),
+            vz: vz.clone(),
+        }
+    }
+    fn verify_solution(rock: &Hail, hails: &[Hail]) -> bool {
+        hails.iter().all(|h| {
+            if let Some(t) = Self::find_t(&rock.x, &rock.vx, h) {
+                rock == &Self::solve(&rock.vx, &rock.vy, &rock.vz, h, &t)
+            } else {
+                false
+            }
+        })
     }
 }
 
-type Solution = usize;
+fn int_it(n: &BigInt) -> i64 {
+    let (sign, digits) = n.to_u64_digits();
+    match sign {
+        num::bigint::Sign::Minus => 0 - digits[0] as i64,
+        num::bigint::Sign::NoSign => 0,
+        num::bigint::Sign::Plus => digits[0] as i64,
+    }
+}
+fn float_it(n: &BigInt) -> f64 {
+    int_it(n) as f64
+}
+
+type Solution = u64;
 impl DaySolver<Solution> for Day24 {
     fn part1(input: Vec<String>) -> Option<Solution> {
-        return Some(666);
         let hails = Self::parse(&input);
         let zero = BigRational::new(BigInt::from(0), BigInt::from(1));
         let min = BigRational::new(BigInt::from(200000000000000_u64), BigInt::from(1));
@@ -143,60 +179,25 @@ impl DaySolver<Solution> for Day24 {
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
         let hails = Self::parse(&input);
-        let xs = Self::valid_vs(&hails, 0);
-        let ys = Self::valid_vs(&hails, 1);
-        let zs = Self::valid_vs(&hails, 2);
-        // let mut potential_t1_vxs = vec![];
-        for vx in xs.iter() {
-            for vy in ys.iter() {
-                let x1 = &hails[3].x;
-                let x2 = &hails[4].x;
-                let vx1 = &hails[3].vx;
-                let vx2 = &hails[4].vx;
-                let y1 = &hails[3].y;
-                let y2 = &hails[4].y;
-                let vy1 = &hails[3].vy;
-                let vy2 = &hails[4].vy;
-                let numerator = ((vx2 - vx) * (y1 - y2)) - ((vy2 - vy) * (x1 - x2));
-                let denominator = ((vx1 - vx) * (vy2 - vy)) - ((vy1 - vy) * (vx2 - vx));
-                if denominator.is_zero() {
-                    continue;
-                }
-                if numerator.is_multiple_of(&denominator) {
-                    let t1 = &numerator / &denominator;
-                    if t1 > BigInt::zero() {
-                        // println!("{}/{} = {}", &numerator, &denominator, &t1);
-                        // potential_t1_vxs.push((t1, vx));
-                        let x = x1 + &t1 * (vx1 - vx);
-                        let y = y1 + &t1 * (vy1 - vy);
-                        let c = hails
-                            .iter()
-                            .filter(|hail| {
-                                let num = &x - &hail.x;
-                                let denom = &hail.vx - vx;
-                                (!denom.is_zero()) && num.is_multiple_of(&denom)
-                            })
-                            .count();
-                        // println!("\t\t\t\t\t\tCounted {c} out of {}", hails.len());
-                        if c > 50 {
-                            println!("FOUND IT {x} {c}");
-                            println!("{} ==== {}", &x + (&t1 * vx), x1 + (&t1 * vx1));
-                            println!("{} ==== {}", &y + (&t1 * vy), y1 + (&t1 * vy1));
-                            hails.iter().for_each(|hail| {
-                                let num = &x - &hail.x;
-                                let denom = &hail.vx - vx;
-                                if (!denom.is_zero()) && num.is_multiple_of(&denom) {
-                                    println!("yay {}", num / denom);
-                                } else {
-                                    println!("no {num} {denom} {}", num.is_multiple_of(&denom));
-                                }
-                            });
-                            panic!()
+        let min_v = -500;
+        let max_v = 500;
+        for vx in min_v..max_v {
+            let vx = BigInt::from(vx);
+            for vy in min_v..max_v {
+                let vy = BigInt::from(vy);
+                if let Some(x) = Self::find_x(&vx, &vy, &hails[0], &hails[1]) {
+                    if let Some(t) = Self::find_t(&x, &vx, &hails[0]) {
+                        for vz in min_v..max_v {
+                            let vz = BigInt::from(vz);
+                            let rock = Self::solve(&vx, &vy, &vz, &hails[0], &t);
+                            if Self::verify_solution(&rock, &hails) {
+                                return Some((&rock.x + &rock.y + &rock.z).to_u64_digits().1[0]);
+                            }
                         }
                     }
                 }
             }
         }
-        None
+        unreachable!()
     }
 }
