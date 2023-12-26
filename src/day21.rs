@@ -6,7 +6,7 @@ use crate::util::DaySolver;
 #[derive(Eq, PartialEq)]
 pub enum Tile {
     Rock,
-    Plot(Option<i32>),
+    Plot(bool),
 }
 pub struct Field {
     tiles: HashMap<(i32, i32), Tile>,
@@ -15,14 +15,14 @@ pub struct Field {
     start: (i32, i32),
 }
 impl Field {
-    pub fn print(&self) {
+    pub fn print(&self, even: bool) {
         for y in 0..self.height {
             for x in 0..self.width {
                 match self.tiles.get(&(x, y)) {
                     Some(Tile::Rock) => print!("#"),
-                    Some(Tile::Plot(None)) => print!("."),
-                    Some(Tile::Plot(Some(steps))) => {
-                        if steps % 2 == 0 {
+                    Some(Tile::Plot(false)) => print!("."),
+                    Some(Tile::Plot(true)) => {
+                        if even == ((x + y) % 2 == 0) {
                             print!("O");
                         } else {
                             print!(".");
@@ -55,9 +55,9 @@ impl Day21 {
                     (
                         (x as i32, y as i32),
                         match c {
-                            'S' => Tile::Plot(None),
+                            'S' => Tile::Plot(false),
                             '#' => Tile::Rock,
-                            '.' => Tile::Plot(None),
+                            '.' => Tile::Plot(false),
                             _ => unreachable!(),
                         },
                     )
@@ -77,15 +77,15 @@ type Solution = usize;
 impl DaySolver<Solution> for Day21 {
     fn part1(input: Vec<String>) -> Option<Solution> {
         let mut field = Self::parse(&input);
-        field.print();
+        field.print(true);
         let mut to_visit = HashSet::new();
         to_visit.insert(field.start);
-        for steps in 0..=64 {
+        for _ in 0..=64 {
             let mut next_visits = HashSet::new();
             for (x, y) in to_visit {
-                if let Some(&Tile::Plot(maybe_steps)) = field.tiles.get(&(x, y)) {
-                    if maybe_steps.is_none() {
-                        field.tiles.insert((x, y), Tile::Plot(Some(steps)));
+                if let Some(&Tile::Plot(visited)) = field.tiles.get(&(x, y)) {
+                    if !visited {
+                        field.tiles.insert((x, y), Tile::Plot(true));
                     }
                     next_visits.insert((x + 1, y));
                     next_visits.insert((x - 1, y));
@@ -95,14 +95,14 @@ impl DaySolver<Solution> for Day21 {
             }
             to_visit = next_visits;
         }
-        field.print();
+        field.print(true);
         Some(
             field
                 .tiles
-                .values()
-                .filter(|tile| {
-                    if let Tile::Plot(Some(steps)) = tile {
-                        steps % 2 == 0
+                .iter()
+                .filter(|((x, y), tile)| {
+                    if tile == &&Tile::Plot(true) {
+                        (x + y) % 2 == 0
                     } else {
                         false
                     }
@@ -111,6 +111,8 @@ impl DaySolver<Solution> for Day21 {
         )
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
+        let field = Self::parse(&input);
+        let w = field.width;
         // Some interesting notes:
         // There is an unobstructed vertical and horizontal corridor starting exactly in the
         // center. This means we don't have to worry about any obstructions when figuring out the
