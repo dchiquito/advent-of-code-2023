@@ -6,7 +6,7 @@ use crate::util::DaySolver;
 #[derive(Clone, Eq, PartialEq)]
 pub enum Tile {
     Rock,
-    Plot(bool),
+    Plot,
 }
 #[derive(Clone)]
 pub struct Field {
@@ -16,23 +16,17 @@ pub struct Field {
     start: (i32, i32),
 }
 impl Field {
-    pub fn visit(&mut self, x: i32, y: i32) -> bool {
+    pub fn is_plot(&self, x: i32, y: i32) -> bool {
         let x_mod = ((x % self.width) + self.width) % self.width;
         let y_mod = ((y % self.height) + self.height) % self.height;
-        if self.tiles.get(&(x_mod, y_mod)) == Some(&Tile::Rock) {
-            false
-        } else {
-            self.tiles.insert((x, y), Tile::Plot(true));
-            true
-        }
+        self.tiles.get(&(x_mod, y_mod)) == Some(&Tile::Plot)
     }
     pub fn print(&self, even: bool) {
         for y in -self.height..self.height * 2 {
             for x in -self.width..self.width * 2 {
                 match self.tiles.get(&(x, y)) {
                     Some(Tile::Rock) => print!("#"),
-                    Some(Tile::Plot(false)) => print!("."),
-                    Some(Tile::Plot(true)) => {
+                    Some(Tile::Plot) => {
                         if even == ((x + y) % 2 == 0) {
                             print!("O");
                         } else {
@@ -45,33 +39,37 @@ impl Field {
             println!();
         }
     }
-    pub fn count(&self, start: (i32, i32), steps: i32, even: bool) -> u64 {
-        let mut field: Field = self.clone();
-        let mut to_visit = HashSet::from([start]);
+    pub fn count(&self, steps: i32) -> u64 {
+        let mut count = 0;
+        let mut to_visit = HashSet::from([self.start]);
+        let mut just_visited = HashSet::new();
         for _ in 0..=steps {
             let mut next_visits = HashSet::new();
-            for (x, y) in to_visit {
-                if field.visit(x, y) {
-                    next_visits.insert((x + 1, y));
-                    next_visits.insert((x - 1, y));
-                    next_visits.insert((x, y + 1));
-                    next_visits.insert((x, y - 1));
+            for (x, y) in to_visit.iter() {
+                let (x, y) = (*x, *y);
+                if self.is_plot(x, y) {
+                    if (((x + y) % 2) + 2) % 2 == steps % 2 {
+                        count += 1;
+                    }
+                    if !just_visited.contains(&(x + 1, y)) {
+                        next_visits.insert((x + 1, y));
+                    }
+                    if !just_visited.contains(&(x - 1, y)) {
+                        next_visits.insert((x - 1, y));
+                    }
+                    if !just_visited.contains(&(x, y + 1)) {
+                        next_visits.insert((x, y + 1));
+                    }
+                    if !just_visited.contains(&(x, y - 1)) {
+                        next_visits.insert((x, y - 1));
+                    }
                 }
             }
+            just_visited = to_visit;
             to_visit = next_visits;
         }
         // field.print(even);
-        field
-            .tiles
-            .iter()
-            .filter(|((x, y), tile)| {
-                if tile == &&Tile::Plot(true) {
-                    even == ((x + y) % 2 == 0)
-                } else {
-                    false
-                }
-            })
-            .count() as u64
+        count
     }
 }
 
@@ -94,9 +92,8 @@ impl Day21 {
                     (
                         (x as i32, y as i32),
                         match c {
-                            'S' => Tile::Plot(false),
+                            'S' | '.' => Tile::Plot,
                             '#' => Tile::Rock,
-                            '.' => Tile::Plot(false),
                             _ => unreachable!(),
                         },
                     )
@@ -116,44 +113,32 @@ type Solution = u64;
 impl DaySolver<Solution> for Day21 {
     fn part1(input: Vec<String>) -> Option<Solution> {
         let mut field = Self::parse(&input);
-        Some(field.count(field.start, 64, true))
+        // These will eventually pass with the test input
+        // assert_eq!(field.count(field.start, 6), 16);
+        // assert_eq!(field.count(field.start, 10), 50);
+        // assert_eq!(field.count(field.start, 50), 1594);
+        // assert_eq!(field.count(field.start, 100), 6536);
+        // assert_eq!(field.count(field.start, 500), 167004);
+        // assert_eq!(field.count(field.start, 1000), 668697);
+        // assert_eq!(field.count(field.start, 5000), 16733044);
+        Some(field.count(64))
     }
     fn part2(input: Vec<String>) -> Option<Solution> {
         let field = Self::parse(&input);
         let w = field.width;
         let w2 = w / 2;
-        println!("{w} {w2}");
         let all_steps = 26501365;
-        // let all_steps = 589;
-        let all_steps = (4 * w) + w2;
-        assert_eq!((all_steps - (w + w2)) % (w * 3), 0);
-        let diagonal_tile = field.count(field.start, w + w2, true);
-        println!("a tile has {diagonal_tile}");
-        let diagonal_tile_x9 = field.count(field.start, (4 * w) + w2, true);
-        println!("{all_steps} steps => {diagonal_tile_x9}");
-        let diagonal_width_2 = ((all_steps - (w + w2)) / (w * 3)) as u64;
-        let diagonal_width = (diagonal_width_2 * 2) + 1;
-        let diagonal_tile_count = diagonal_width * diagonal_width;
-        println!("{diagonal_width_2} {diagonal_width} => {diagonal_tile_count} tiles");
-        Some(diagonal_tile_count * diagonal_tile)
-        // Some interesting notes:
-        // There is an unobstructed vertical and horizontal corridor starting exactly in the
-        // center. This means we don't have to worry about any obstructions when figuring out the
-        // shortest path to any plot on the axes.
-        // There is also an unobstructed row around every edge of the plot.
-        // The rocks are sparse enough that for any sufficiently long distance, the minimum path is
-        // basically just the manhattan distance, especially from edge to edge.
-        // Let's just assume that's true. You can always get from one edge tile to another edge
-        // tile in the manhattan distance steps.
-        // The dimensions of the field are 131 by 131. So 130 steps to walk across, or 130 steps to
-        // walk from the center to a corner.
-        // 26501365 steps / 130 steps per field = 203856 fields, in one dimension of course
-        //          (rounded down)
-        // I do see regions that are completely blocked off by rocks, so we must do a flood fill.
-        // It is not enough to just calculate the area and subtract the number of rocks in it.
-        // 26501365 steps from the origin
-        // It takes 130/2 = 65 steps to get to the edge from the middle, so 26501300 steps in every
-        // cardinal direction to get to the tips of the diamond.
-        //
+        let a = field.count(w2);
+        let b = field.count(w + w2);
+        let c = field.count(w + w + w2);
+        let s = b - a;
+        let mut r = c - b;
+        let d = r - s;
+        let mut res = b;
+        for i in 0..((all_steps - w2) / w) - 1 {
+            res += r;
+            r += d;
+        }
+        Some(res)
     }
 }
